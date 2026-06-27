@@ -86,7 +86,7 @@ function Register() {
         password,
       };
 
-      console.log("REGISTER PAYLOAD", payload);
+      ///console.log("REGISTER PAYLOAD", payload);
 
       const response = await registerUser(payload);
 
