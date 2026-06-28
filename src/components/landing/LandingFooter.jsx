@@ -93,7 +93,7 @@ function LandingFooter() {
           <div>© {new Date().getFullYear()} LetsQuiz</div>
           <div className="flex items-center gap-3">
             {social.map((s) => {
-              const Icon = s.icon;
+              const Icon = s.Icon;
               return (
                 <a
                   key={s.label}
