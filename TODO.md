@@ -1,16 +1,7 @@
-# TODO - LetsQuiz routing update
-
-- [ ] Gather routing/auth behavior in current code (App routes, AuthContext, ProtectedRoute) 
-- [ ] Update `src/App.jsx` routes to:
-  - [ ] Serve LandingPage on `/` when not authenticated
-  - [ ] Redirect authenticated users from `/` to `/dashboard`
-  - [ ] Keep `/login` and `/register` accessible for unauthenticated users
-  - [ ] Ensure logout behavior redirects to `/` (only adjust routing/navigation)
-  - [ ] Ensure direct URL refresh works in production (Vercel history fallback)
-- [ ] Ensure LandingPage contains required sections (Hero/Features/How it Works/Educators/Statistics/CTA/Footer)
-- [ ] Ensure Navbar buttons route to correct pages (/login, /register, /register for Get Started Free)
-- [ ] Confirm no changes to existing JWT/auth logic and `ProtectedRoute`
-- [ ] Add/adjust a catch-all route (optional) for robustness
-- [ ] Run dev build/lint/test and verify routing locally
-- [ ] Validate Vercel config for SPA routing
+- [x] Phase 1: Replace LandingPage with minimal component and confirm `/` renders locally.
+- [ ] Phase 2: Restore LandingPage components one-by-one until React crash #130 is reproduced (local).
+- [ ] Phase 3: Fix incorrect export/import for the faulty component.
+- [ ] Phase 4: Verify exports/imports across the project.
+- [ ] Phase 5: Run `npm run build` and fix warnings/errors.
+- [ ] Deployment fix: ensure SPA rewrite works for production root (`/`) while keeping `/login` working.
 
