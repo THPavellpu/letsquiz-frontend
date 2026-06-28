@@ -11,7 +11,7 @@ import CTA from "./CTA";
 import LandingFooter from "./LandingFooter";
 import FAQ from "./FAQ";
 
-function LandingPage() {
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <LandingNavbar />
@@ -50,5 +50,6 @@ function LandingPage() {
   );
 }
 
-export default LandingPage;
+
+
 
