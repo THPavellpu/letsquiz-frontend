@@ -28,6 +28,8 @@ import PageContainer from "./components/layout/PageContainer";
 
 
 
+import { LandingPage } from "./components/landing";
+
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -39,6 +41,7 @@ function App() {
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
         }
       />
+
 
 
       <Route path="/login" element={<Login />} />
