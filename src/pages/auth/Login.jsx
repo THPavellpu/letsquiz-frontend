@@ -59,7 +59,7 @@ function Login() {
 
       // Do not modify authentication logic
       login(response.data.access, response.data.refresh);
-      navigate("/profile");
+      navigate("/dashboard");
     } catch (error) {
       // Keep existing behavior (log server error), but also show a user-friendly message
       if (error?.response?.data) console.log(error.response.data);

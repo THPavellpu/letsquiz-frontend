@@ -33,10 +33,20 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/profile" : "/login"} replace />} />
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
+        }
+      />
+
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 

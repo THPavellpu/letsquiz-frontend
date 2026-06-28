@@ -102,7 +102,7 @@ function Navbar({ className = "" }) {
     try {
       logout();
     } finally {
-      navigate("/login");
+      navigate("/");
     }
   };
 
