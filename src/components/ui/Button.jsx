@@ -26,9 +26,10 @@ function Button({
   }
 
   const sizes = {
-    sm: 'h-9 px-3 text-sm',
-    md: 'h-10 px-4 text-sm',
-    lg: 'h-11 px-5 text-base',
+    // Mobile-first: ensure minimum touch target height (>=48px)
+    sm: 'h-12 px-4 text-base',
+    md: 'h-12 px-5 text-base',
+    lg: 'h-12 px-6 text-base',
   }
 
   return (
