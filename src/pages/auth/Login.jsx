@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/AuthContext";
@@ -8,6 +8,9 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Branding from "../../components/layout/Branding";
+
+// Feature flag for Google Login (not implemented yet)
+const ENABLE_GOOGLE_LOGIN = false;
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -95,7 +98,7 @@ function Login() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <Input
                   label="Email"
                   type="email"
@@ -105,7 +108,7 @@ function Login() {
                   error={validation.email || undefined}
                 />
 
-                <div>
+                <div className="relative">
                   <Input
                     label="Password"
                     type={showPassword ? "text" : "password"}
@@ -113,29 +116,25 @@ function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     error={validation.password || undefined}
-                    className="text-base"
+                    className="w-full pr-20 text-base"
                   />
 
-                  <div className="-mt-10 flex justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((s) => !s)}
-                      className="rounded-md px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                    >
-                      {showPassword ? "Hide" : "Show"}
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
 
-                    <button
-                      type="button"
-                      className="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                      onClick={() => {
-                        // UI-only: keep existing functionality unchanged
-                        setFormError("");
-                      }}
-                    >
-                      Forgot password
-                    </button>
-                  </div>
+                <div className="flex justify-end">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
 
                 {formError ? (
@@ -157,27 +156,31 @@ function Login() {
                   Login
                 </Button>
 
-                <div className="py-2">
-                  <div className="flex items-center">
-                    <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
-                    <div className="mx-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-                      ---------------- OR ----------------
+                {ENABLE_GOOGLE_LOGIN && (
+                  <>
+                    <div className="py-2">
+                      <div className="flex items-center">
+                        <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+                        <div className="mx-3 text-xs font-medium text-slate-500 dark:text-slate-400">
+                          ---------------- OR ----------------
+                        </div>
+                        <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+                      </div>
                     </div>
-                    <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
-                  </div>
-                </div>
 
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:text-slate-100"
-                  onClick={() => {
-                    // UI-only: keep existing functionality unchanged
-                  }}
-                >
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10">G</span>
-                  Continue with Google
-                </button>
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:text-slate-100"
+                      onClick={() => {
+                        // UI-only: keep existing functionality unchanged
+                      }}
+                    >
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10">G</span>
+                      Continue with Google
+                    </button>
+                  </>
+                )}
 
                 <div className="pt-2 text-center">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Don't have an account?</span>

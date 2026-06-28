@@ -5,6 +5,8 @@ import Profile from "./pages/auth/Profile";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import VerifySuccess from "./pages/auth/VerifySuccess";
 import VerifyFailed from "./pages/auth/VerifyFailed";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -35,6 +37,8 @@ function App() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 
       <Route path="/verify-success" element={<VerifySuccess />} />
       <Route path="/verify-failed" element={<VerifyFailed />} />

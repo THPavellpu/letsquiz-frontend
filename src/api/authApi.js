@@ -53,3 +53,21 @@ export const logoutUser = () => {
     );
 
 };
+
+export const forgotPassword = (data) => {
+
+    return api.post(
+        "/auth/forgot-password/",
+        data
+    );
+
+};
+
+export const resetPassword = (uid, token, data) => {
+
+    return api.post(
+        `/auth/reset-password/${uid}/${token}/`,
+        data
+    );
+
+};
