@@ -15,6 +15,8 @@ function Navbar({ className = "" }) {
 
   const profileButtonRef = useRef(null);
   const profilePanelRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const mobileMenuButtonRef = useRef(null);
 
   const routeLabel = useMemo(() => {
     const p = location.pathname;
@@ -47,17 +49,101 @@ function Navbar({ className = "" }) {
     return () => document.removeEventListener("mousedown", onDocMouseDown);
   }, [profileOpen]);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    function onDocMouseDown(e) {
+      if (!mobileMenuOpen) return;
+
+      const menu = mobileMenuRef.current;
+      const btn = mobileMenuButtonRef.current;
+      if (!menu || !btn) return;
+
+      if (btn.contains(e.target) || menu.contains(e.target)) return;
+      setMobileMenuOpen(false);
+    }
+
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setProfileOpen(false);
   }, [location.pathname]);
 
+  // Close mobile menu when screen changes from mobile to desktop
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 640) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Close mobile menu on escape key
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        mobileMenuButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileMenuOpen]);
+
   const handleLogout = async () => {
+    setMobileMenuOpen(false);
     try {
       logout();
     } finally {
       navigate("/login");
     }
+  };
+
+  // Mobile navigation items
+  const mobileNavItems = useMemo(() => {
+    const items = [
+      { key: "home", label: "Home", href: "/" },
+    ];
+
+    if (isAuthenticated) {
+      items.push(
+        { key: "dashboard", label: "Dashboard", href: "/dashboard" },
+        { key: "create-quiz", label: "Create Quiz", href: "/create-quiz" },
+        { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
+        { key: "profile", label: "Profile", href: "/profile" }
+      );
+    } else {
+      items.push(
+        { key: "login", label: "Login", href: "/login" },
+        { key: "register", label: "Register", href: "/register" }
+      );
+    }
+
+    return items;
+  }, [isAuthenticated]);
+
+  // Additional mobile menu items that need special handling (logout)
+  const mobileMenuActions = useMemo(() => {
+    const actions = [];
+
+    if (isAuthenticated) {
+      actions.push(
+        { key: "logout", label: "Logout", onClick: handleLogout, isLogout: true }
+      );
+    }
+
+    return actions;
+  }, [isAuthenticated]);
+
+  const handleMobileNavClick = (href) => {
+    navigate(href);
   };
 
   return (
@@ -70,28 +156,37 @@ function Navbar({ className = "" }) {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <button
+            ref={mobileMenuButtonRef}
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-600 bg-slate-800 text-slate-200 transition hover:bg-slate-700 sm:hidden"
-            aria-label="Open menu"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
             onClick={() => setMobileMenuOpen((v) => !v)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setMobileMenuOpen((v) => !v);
+              }
+            }}
           >
             <span className="sr-only">Menu</span>
             <div className="relative h-4 w-5">
               <div
                 className={[
-                  "absolute left-0 top-0 h-0.5 w-full bg-slate-400 transition",
+                  "absolute left-0 top-0 h-0.5 w-full bg-slate-400 transition duration-200",
                   mobileMenuOpen ? "translate-y-1.5 rotate-45" : "",
                 ].join(" ")}
               />
               <div
                 className={[
-                  "absolute left-0 top-2 h-0.5 w-full bg-slate-400 transition",
+                  "absolute left-0 top-2 h-0.5 w-full bg-slate-400 transition duration-200",
                   mobileMenuOpen ? "opacity-0" : "",
                 ].join(" ")}
               />
               <div
                 className={[
-                  "absolute left-0 top-4 h-0.5 w-full bg-slate-400 transition",
+                  "absolute left-0 top-4 h-0.5 w-full bg-slate-400 transition duration-200",
                   mobileMenuOpen ? "-translate-y-1.5 -rotate-45" : "",
                 ].join(" ")}
               />
@@ -192,8 +287,59 @@ function Navbar({ className = "" }) {
         </div>
       </div>
 
-      {/* Mobile sidebar toggle hook: actual Sidebar is controlled by PageContainer */}
-      <div className="hidden" aria-hidden="true" data-mobile-menu-open={mobileMenuOpen} />
+      {/* Mobile Navigation Menu */}
+      <div
+        ref={mobileMenuRef}
+        id="mobile-menu"
+        className={[
+          "absolute left-0 top-16 w-full overflow-hidden border-b border-slate-700 bg-slate-900/95 backdrop-blur sm:hidden",
+          "transition-all duration-200 ease-in-out",
+          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+        ].join(" ")}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <nav className="px-4 py-3">
+          <ul className="space-y-1">
+            {mobileNavItems.map((item) => {
+              const isActive = location.pathname === item.href ||
+                (item.href !== "/" && location.pathname.startsWith(item.href));
+              return (
+                <li key={item.key}>
+                  <button
+                    type="button"
+                    onClick={() => handleMobileNavClick(item.href)}
+                    className={[
+                      "w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition duration-200",
+                      isActive
+                        ? "bg-slate-700 text-white"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                    ].join(" ")}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              );
+            })}
+            {mobileMenuActions.map((action) => (
+              <li key={action.key}>
+                <button
+                  type="button"
+                  onClick={action.onClick}
+                  className={[
+                    "w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition duration-200",
+                    action.isLogout
+                      ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                  ].join(" ")}
+                >
+                  {action.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </header>
   );
 }
