@@ -108,7 +108,7 @@ function Login() {
 
       // Do not modify authentication logic
       login(response.data.access, response.data.refresh);
-      navigate("/dashboard");
+      navigate("/profile");
     } catch (error) {
       const responseData = error?.response?.data;
       const errorCode = responseData?.code;

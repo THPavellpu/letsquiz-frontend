@@ -27,6 +27,7 @@ function Navbar({ className = "" }) {
     if (p.startsWith("/quiz/")) return "Quiz";
     if (p.startsWith("/results/")) return "Results";
     if (p.startsWith("/join-quiz")) return "Join";
+    if (p.startsWith("/my-performance")) return "My Performance";
     if (p.startsWith("/profile")) return "Profile";
     if (p.startsWith("/login")) return "Login";
     if (p.startsWith("/register")) return "Register";
@@ -108,15 +109,14 @@ function Navbar({ className = "" }) {
 
   // Mobile navigation items
   const mobileNavItems = useMemo(() => {
-    const items = [
-      { key: "home", label: "Home", href: "/" },
-    ];
+    const items = [];
 
     if (isAuthenticated) {
       items.push(
         { key: "dashboard", label: "Dashboard", href: "/dashboard" },
         { key: "create-quiz", label: "Create Quiz", href: "/create-quiz" },
         { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
+        { key: "my-performance", label: "My Performance", href: "/my-performance" },
         { key: "profile", label: "Profile", href: "/profile" }
       );
     } else {
@@ -144,6 +144,62 @@ function Navbar({ className = "" }) {
 
   const handleMobileNavClick = (href) => {
     navigate(href);
+    setMobileMenuOpen(false);
+  };
+
+  // Icon components for navigation items
+  const MenuIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+  );
+
+  const DashboardIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+
+  const CreateQuizIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    </svg>
+  );
+
+  const JoinQuizIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+    </svg>
+  );
+
+  const PerformanceIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  );
+
+  const ProfileIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  );
+
+  const LogoutIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  );
+
+  const getIcon = (key) => {
+    switch (key) {
+      case "dashboard": return <DashboardIcon />;
+      case "create-quiz": return <CreateQuizIcon />;
+      case "join-quiz": return <JoinQuizIcon />;
+      case "my-performance": return <PerformanceIcon />;
+      case "profile": return <ProfileIcon />;
+      case "logout": return <LogoutIcon />;
+      default: return null;
+    }
   };
 
   return (
@@ -287,58 +343,101 @@ function Navbar({ className = "" }) {
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Drawer - Slide-in from left */}
       <div
         ref={mobileMenuRef}
         id="mobile-menu"
         className={[
-          "absolute left-0 top-16 w-full overflow-hidden border-b border-slate-700 bg-slate-900/95 backdrop-blur sm:hidden",
-          "transition-all duration-200 ease-in-out",
-          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+          "fixed inset-0 z-40 sm:hidden",
+          mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none",
         ].join(" ")}
         aria-hidden={!mobileMenuOpen}
       >
-        <nav className="px-4 py-3">
-          <ul className="space-y-1">
-            {mobileNavItems.map((item) => {
-              const isActive = location.pathname === item.href ||
-                (item.href !== "/" && location.pathname.startsWith(item.href));
-              return (
-                <li key={item.key}>
-                  <button
-                    type="button"
-                    onClick={() => handleMobileNavClick(item.href)}
-                    className={[
-                      "w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition duration-200",
-                      isActive
-                        ? "bg-slate-700 text-white"
-                        : "text-slate-300 hover:bg-slate-800 hover:text-white",
-                    ].join(" ")}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              );
-            })}
-            {mobileMenuActions.map((action) => (
-              <li key={action.key}>
-                <button
-                  type="button"
-                  onClick={action.onClick}
-                  className={[
-                    "w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition duration-200",
-                    action.isLogout
-                      ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white",
-                  ].join(" ")}
-                >
-                  {action.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {/* Backdrop */}
+        <div
+          className={[
+            "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+            mobileMenuOpen ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+
+        {/* Drawer */}
+        <div
+          className={[
+            "absolute left-0 top-0 h-full w-72 max-w-[80%] transform transition-transform duration-300 ease-out",
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          ].join(" ")}
+        >
+          <div className="flex h-full flex-col bg-slate-900 border-r border-slate-700">
+            {/* Drawer Header */}
+            <div className="flex h-16 items-center justify-between border-b border-slate-700 px-4">
+              <span className="text-sm font-semibold text-slate-200">Menu</span>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Drawer Content */}
+            <nav className="flex-1 overflow-y-auto p-4">
+              <ul className="space-y-2">
+                {mobileNavItems.map((item) => {
+                  const isActive = location.pathname === item.href ||
+                    (item.href !== "/" && location.pathname.startsWith(item.href));
+                  return (
+                    <li key={item.key}>
+                      <button
+                        type="button"
+                        onClick={() => handleMobileNavClick(item.href)}
+                        className={[
+                          "flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-medium transition duration-200",
+                          isActive
+                            ? "bg-indigo-600 text-white"
+                            : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                        ].join(" ")}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span className={[
+                          "flex-shrink-0",
+                          isActive ? "text-white" : "text-slate-400"
+                        ].join(" ")}>
+                          {getIcon(item.key)}
+                        </span>
+                        {item.label}
+                      </button>
+                    </li>
+                  );
+                })}
+                {mobileMenuActions.map((action) => (
+                  <li key={action.key}>
+                    <button
+                      type="button"
+                      onClick={action.onClick}
+                      className={[
+                        "flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-medium transition duration-200",
+                        action.isLogout
+                          ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                          : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                      ].join(" ")}
+                    >
+                      <span className="flex-shrink-0 text-red-400">
+                        {getIcon(action.key)}
+                      </span>
+                      {action.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </div>
       </div>
     </header>
   );

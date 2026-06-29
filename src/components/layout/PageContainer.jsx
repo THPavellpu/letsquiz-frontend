@@ -17,12 +17,11 @@ function PageContainer({ className = "", children, maxWidth = "7xl" }) {
     }
 
     return [
-      { key: "profile", label: "Profile", href: "/profile" },
       { key: "dashboard", label: "Dashboard", href: "/dashboard" },
-      { key: "my-performance", label: "My Performance", href: "/my-performance" },
       { key: "create-quiz", label: "Create Quiz", href: "/create-quiz" },
       { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
-      { key: "leaderboards", label: "Leaderboards", href: "/leaderboards" },
+      { key: "my-performance", label: "My Performance", href: "/my-performance" },
+      { key: "profile", label: "Profile", href: "/profile" },
     ];
   }, [isAuthenticated]);
 
