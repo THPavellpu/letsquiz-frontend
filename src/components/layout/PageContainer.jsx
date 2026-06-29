@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -6,7 +6,6 @@ import Footer from "./Footer";
 
 function PageContainer({ className = "", children, maxWidth = "7xl" }) {
   const { isAuthenticated } = useAuth();
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const navItems = useMemo(() => {
     if (!isAuthenticated) {
@@ -35,19 +34,9 @@ function PageContainer({ className = "", children, maxWidth = "7xl" }) {
       <Navbar />
 
       <div className="mx-auto flex w-full max-w-7xl">
-        {/* Sidebar */}
+        {/* Desktop Sidebar Only - Mobile navigation is handled by Navbar */}
         <div className="hidden sm:block">
           <Sidebar title="LetsQuiz" items={navItems} />
-        </div>
-
-        {/* Mobile sidebar toggle */}
-        <div className="sm:hidden">
-          <div className="sr-only">Mobile layout</div>
-          <button
-            type="button"
-            className="sr-only"
-            onClick={() => setMobileSidebarOpen(true)}
-          />
         </div>
 
         {/* Main content */}
@@ -63,16 +52,6 @@ function PageContainer({ className = "", children, maxWidth = "7xl" }) {
 
           <Footer />
         </main>
-
-        {/* Mobile overlay sidebar */}
-        <div className="sm:hidden">
-          <Sidebar
-            title="LetsQuiz"
-            items={navItems}
-            mobileOpen={mobileSidebarOpen}
-            onMobileClose={() => setMobileSidebarOpen(false)}
-          />
-        </div>
       </div>
     </div>
   );

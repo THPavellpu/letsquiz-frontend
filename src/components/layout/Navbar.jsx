@@ -348,7 +348,7 @@ function Navbar({ className = "" }) {
         ref={mobileMenuRef}
         id="mobile-menu"
         className={[
-          "fixed inset-0 z-40 sm:hidden",
+          "fixed inset-0 z-[60] sm:hidden",
           mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none",
         ].join(" ")}
         aria-hidden={!mobileMenuOpen}
@@ -356,26 +356,28 @@ function Navbar({ className = "" }) {
         {/* Backdrop */}
         <div
           className={[
-            "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+            "absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
             mobileMenuOpen ? "opacity-100" : "opacity-0",
           ].join(" ")}
           onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
         />
 
         {/* Drawer */}
         <div
           className={[
-            "absolute left-0 top-0 h-full w-72 max-w-[80%] transform transition-transform duration-300 ease-out",
+            "absolute left-0 top-0 h-full w-72 max-w-[85%] transform transition-transform duration-300 ease-out",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           ].join(" ")}
+          aria-hidden="true"
         >
-          <div className="flex h-full flex-col bg-slate-900 border-r border-slate-700">
+          <div className="flex h-full flex-col bg-slate-900 border-r border-slate-700 shadow-xl">
             {/* Drawer Header */}
-            <div className="flex h-16 items-center justify-between border-b border-slate-700 px-4">
-              <span className="text-sm font-semibold text-slate-200">Menu</span>
+            <div className="flex h-16 items-center justify-between border-b border-slate-700 px-4 shrink-0">
+              <span className="text-base font-semibold text-white">Menu</span>
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close menu"
               >
@@ -386,23 +388,24 @@ function Navbar({ className = "" }) {
             </div>
 
             {/* Drawer Content */}
-            <nav className="flex-1 overflow-y-auto p-4">
-              <ul className="space-y-2">
+            <nav className="flex-1 overflow-y-auto p-3" role="navigation" aria-label="Mobile navigation">
+              <ul className="space-y-1.5" role="list">
                 {mobileNavItems.map((item) => {
                   const isActive = location.pathname === item.href ||
                     (item.href !== "/" && location.pathname.startsWith(item.href));
                   return (
-                    <li key={item.key}>
+                    <li key={item.key} role="none">
                       <button
                         type="button"
                         onClick={() => handleMobileNavClick(item.href)}
                         className={[
-                          "flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-medium transition duration-200",
+                          "flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left text-base font-medium transition duration-200 min-h-[48px]",
                           isActive
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-indigo-600 text-white shadow-md"
                             : "text-slate-300 hover:bg-slate-800 hover:text-white",
                         ].join(" ")}
                         aria-current={isActive ? "page" : undefined}
+                        role="menuitem"
                       >
                         <span className={[
                           "flex-shrink-0",
@@ -410,27 +413,28 @@ function Navbar({ className = "" }) {
                         ].join(" ")}>
                           {getIcon(item.key)}
                         </span>
-                        {item.label}
+                        <span className="truncate">{item.label}</span>
                       </button>
                     </li>
                   );
                 })}
                 {mobileMenuActions.map((action) => (
-                  <li key={action.key}>
+                  <li key={action.key} role="none">
                     <button
                       type="button"
                       onClick={action.onClick}
                       className={[
-                        "flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-medium transition duration-200",
+                        "flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left text-base font-medium transition duration-200 min-h-[48px]",
                         action.isLogout
-                          ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                          ? "text-red-400 hover:bg-red-900/40 hover:text-red-300"
                           : "text-slate-300 hover:bg-slate-800 hover:text-white",
                       ].join(" ")}
+                      role="menuitem"
                     >
                       <span className="flex-shrink-0 text-red-400">
                         {getIcon(action.key)}
                       </span>
-                      {action.label}
+                      <span className="truncate">{action.label}</span>
                     </button>
                   </li>
                 ))}
