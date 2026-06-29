@@ -71,3 +71,12 @@ export const resetPassword = (uid, token, data) => {
     );
 
 };
+
+export const resendVerification = (data) => {
+
+    return api.post(
+        "/auth/resend-verification/",
+        data
+    );
+
+};

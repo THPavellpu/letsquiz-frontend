@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 
-import { loginUser } from "../../api/authApi";
+import { loginUser, resendVerification } from "../../api/authApi";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -12,6 +12,35 @@ import Branding from "../../components/layout/Branding";
 // Feature flag for Google Login (not implemented yet)
 const ENABLE_GOOGLE_LOGIN = false;
 
+// Custom icons
+const WarningIcon = () => (
+  <svg
+    className="h-5 w-5 flex-shrink-0"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg
+    className="h-5 w-5 flex-shrink-0"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +48,11 @@ function Login() {
 
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Email verification state
+  const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -44,9 +78,24 @@ function Login() {
     return { ...errors, isValid };
   }, [email, password]);
 
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    try {
+      await resendVerification({ email });
+      setResendSuccess(true);
+    } catch (error) {
+      // Even if error, show success message for security
+      setResendSuccess(true);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
+    setShowVerificationPrompt(false);
+    setResendSuccess(false);
 
     if (!validation.isValid) return;
 
@@ -61,9 +110,39 @@ function Login() {
       login(response.data.access, response.data.refresh);
       navigate("/dashboard");
     } catch (error) {
-      // Keep existing behavior (log server error), but also show a user-friendly message
-      if (error?.response?.data) console.log(error.response.data);
-      setFormError("Login failed. Please check your credentials and try again.");
+      const responseData = error?.response?.data;
+      const errorCode = responseData?.code;
+      const status = error?.response?.status;
+
+      // Handle specific error codes from backend
+      if (errorCode === "EMAIL_NOT_VERIFIED") {
+        setShowVerificationPrompt(true);
+        setFormError("");
+      } else if (errorCode === "INVALID_CREDENTIALS") {
+        setFormError("Invalid email or password.");
+        setShowVerificationPrompt(false);
+      } else if (!error.response) {
+        // Network failure
+        setFormError(
+          "Unable to connect to the server. Please check your internet connection and try again."
+        );
+      } else if (status === 500) {
+        setFormError(
+          "Something went wrong on our end. Please try again later."
+        );
+      } else if (status >= 500) {
+        setFormError(
+          "Server error. Please try again later."
+        );
+      } else if (error.code === "ECONNABORTED") {
+        setFormError(
+          "The request timed out. Please try again."
+        );
+      } else {
+        setFormError(
+          "An unexpected error occurred. Please try again."
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -106,6 +185,7 @@ function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   error={validation.email || undefined}
+                  autoComplete="email"
                 />
 
                 <div className="relative">
@@ -117,6 +197,7 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     error={validation.password || undefined}
                     className="w-full pr-20 text-base"
+                    autoComplete="current-password"
                   />
 
                   <button
@@ -137,20 +218,105 @@ function Login() {
                   </Link>
                 </div>
 
-                {formError ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
-                  >
-                    {formError}
-                  </motion.div>
-                ) : null}
+                {/* Email Not Verified Warning Card */}
+                <AnimatePresence mode="wait">
+                  {showVerificationPrompt && !resendSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                          <WarningIcon />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                            Email not verified
+                          </h3>
+                          <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                            Your email address hasn't been verified yet.
+                          </p>
+                          <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                            Please check your Inbox and Spam folder and click the verification link before logging in.
+                          </p>
+                          <div className="mt-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleResendVerification}
+                              disabled={isResending}
+                              className="border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/30"
+                            >
+                              {isResending ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500/40 border-t-amber-500" />
+                                  <span>Sending...</span>
+                                </span>
+                              ) : (
+                                "Resend Verification Email"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Resend Success Message */}
+                <AnimatePresence mode="wait">
+                  {resendSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                          <CheckIcon />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                            Verification email sent successfully.
+                          </h3>
+                          <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
+                            Please check your Inbox and Spam folder.
+                          </p>
+                          <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
+                            If you have already verified your email, refresh the page and log in again.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form Error */}
+                <AnimatePresence mode="wait">
+                  {formError && !showVerificationPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
+                    >
+                      {formError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <Button
                   type="submit"
                   className="mt-2 w-full text-base"
                   isLoading={isSubmitting}
+                  loadingText="Signing in..."
                   disabled={!validation.isValid || isSubmitting}
                 >
                   Login
@@ -202,6 +368,3 @@ function Login() {
 }
 
 export default Login;
-
-
-
