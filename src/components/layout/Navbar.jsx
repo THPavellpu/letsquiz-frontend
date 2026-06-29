@@ -6,7 +6,7 @@ import Branding from "./Branding";
 
 function Navbar({ className = "" }) {
   const { logout, isAuthenticated } = useAuth();
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -108,6 +108,9 @@ function Navbar({ className = "" }) {
   };
 
   // Mobile navigation items
+  // NOTE: AuthContext's isAuthenticated is derived from token, so this drawer should never be empty.
+  // If you ever see an empty drawer, ensure the token value is set correctly and/or that this
+  // component is not being unmounted/remounted unexpectedly on mobile.
   const mobileNavItems = useMemo(() => {
     const items = [];
 
@@ -118,17 +121,18 @@ function Navbar({ className = "" }) {
         { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
         { key: "my-quizzes", label: "My Quizzes", href: "/my-quizzes" },
         { key: "my-performance", label: "My Performance", href: "/my-performance" },
-        { key: "profile", label: "Profile", href: "/profile" }
+        { key: "profile", label: "Profile", href: "/profile" },
       );
     } else {
       items.push(
         { key: "login", label: "Login", href: "/login" },
-        { key: "register", label: "Register", href: "/register" }
+        { key: "register", label: "Register", href: "/register" },
       );
     }
 
     return items;
   }, [isAuthenticated]);
+
 
   // Additional mobile menu items that need special handling (logout)
   const mobileMenuActions = useMemo(() => {
