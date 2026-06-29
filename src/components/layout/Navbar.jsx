@@ -116,6 +116,7 @@ function Navbar({ className = "" }) {
         { key: "dashboard", label: "Dashboard", href: "/dashboard" },
         { key: "create-quiz", label: "Create Quiz", href: "/create-quiz" },
         { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
+        { key: "my-quizzes", label: "My Quizzes", href: "/my-quizzes" },
         { key: "my-performance", label: "My Performance", href: "/my-performance" },
         { key: "profile", label: "Profile", href: "/profile" }
       );
@@ -172,6 +173,12 @@ function Navbar({ className = "" }) {
     </svg>
   );
 
+  const MyQuizzesIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+  );
+
   const PerformanceIcon = () => (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -195,6 +202,7 @@ function Navbar({ className = "" }) {
       case "dashboard": return <DashboardIcon />;
       case "create-quiz": return <CreateQuizIcon />;
       case "join-quiz": return <JoinQuizIcon />;
+      case "my-quizzes": return <MyQuizzesIcon />;
       case "my-performance": return <PerformanceIcon />;
       case "profile": return <ProfileIcon />;
       case "logout": return <LogoutIcon />;
@@ -388,7 +396,7 @@ function Navbar({ className = "" }) {
             </div>
 
             {/* Drawer Content */}
-            <nav className="flex-1 overflow-y-auto p-3" role="navigation" aria-label="Mobile navigation">
+            <nav className="flex flex-1 flex-col overflow-y-auto p-3" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-1.5" role="list">
                 {mobileNavItems.map((item) => {
                   const isActive = location.pathname === item.href ||
