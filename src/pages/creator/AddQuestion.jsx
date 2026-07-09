@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Check } from "lucide-react";
 
 import { createQuestionWithOptions, getQuizSummary } from "../../api/quizApi";
 
@@ -57,21 +58,23 @@ function OptionCard({ index, text, onTextChange, isCorrect, onSelectCorrect, has
       type="button"
       onClick={onSelectCorrect}
       className={[
-        "group relative flex flex-col gap-2 rounded-xl border border-slate-600 bg-slate-800 p-4 text-left transition-all duration-200",
-        "hover:border-indigo-500",
-        isCorrect ? "border-green-500 bg-green-500/10" : "",
+        "group relative flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-left transition-all duration-200",
+        "hover:border-slate-600 hover:bg-slate-750",
+        isCorrect ? "border-green-500/60 bg-green-500/5" : "",
       ].join(" ")}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-slate-100">Option {index + 1}</div>
+        <div className="text-sm font-semibold text-slate-200">Option {index + 1}</div>
         <div
           className={[
-            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold",
-            isCorrect ? "bg-green-600 text-white" : "bg-slate-700 text-slate-300 group-hover:bg-slate-600",
+            "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-200",
+            isCorrect
+              ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
+              : "bg-slate-700 text-slate-300 group-hover:bg-slate-600",
           ].join(" ")}
           aria-hidden="true"
         >
-          {isCorrect ? "✓" : index + 1}
+          {isCorrect ? <Check className="h-4 w-4" /> : index + 1}
         </div>
       </div>
 
@@ -81,18 +84,20 @@ function OptionCard({ index, text, onTextChange, isCorrect, onSelectCorrect, has
         onChange={(e) => onTextChange(e.target.value)}
         placeholder={`Write option ${index + 1}`}
         className={[
-          "bg-slate-900 text-slate-100 placeholder:text-slate-400 border-slate-600",
+          "bg-slate-900 text-slate-100 placeholder:text-slate-500 border-slate-600",
           hasError
             ? "border-red-400 focus:border-red-500 focus:ring-red-200"
-            : "focus:border-indigo-500 focus:ring-indigo-500",
+            : "focus:border-blue-500 focus:ring-blue-500/30",
         ].join(" ")}
       />
 
-      {isCorrect && (
-        <div className="text-xs font-semibold text-green-500">✓ Correct Answer</div>
-      )}
-      {!isCorrect && (
-        <div className="text-xs text-slate-400">Click to mark as correct</div>
+      {isCorrect ? (
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-green-400">
+          <Check className="h-3.5 w-3.5" />
+          Correct Answer
+        </div>
+      ) : (
+        <div className="text-xs text-slate-500">Click to mark as correct</div>
       )}
     </button>
   );

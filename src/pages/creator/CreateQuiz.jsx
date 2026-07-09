@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Eye, EyeOff, Trash2, Check, Plus, RotateCcw } from "lucide-react";
 
 import { createQuestionWithOptions, createQuiz, generateAiQuiz } from "../../api/quizApi";
 import Badge from "../../components/ui/Badge";
@@ -8,6 +9,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import Modal from "../../components/ui/Modal";
 
 import { validateAiQuestion } from "./questionValidation";
 
@@ -68,20 +70,23 @@ function OptionCard({ index, text, isCorrect, onTextChange, onSelectCorrect, dis
       disabled={disabled}
       onClick={onSelectCorrect}
       className={[
-        "group relative flex flex-col gap-1 rounded-lg border p-2 text-left transition",
-        isCorrect ? "border-green-300 bg-green-50 ring-1 ring-green-200" : "border-gray-200 bg-white hover:bg-gray-50",
+        "group relative flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-left transition-all duration-200",
+        "hover:border-slate-600 hover:bg-slate-750",
+        isCorrect ? "border-green-500/60 bg-green-500/5" : "",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">Option {index + 1}</div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold text-slate-200">Option {index + 1}</div>
         <div
           className={[
-            "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
-            isCorrect ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-gray-200",
+            "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-200",
+            isCorrect
+              ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
+              : "bg-slate-700 text-slate-300 group-hover:bg-slate-600",
           ].join(" ")}
           aria-hidden="true"
         >
-          {isCorrect ? "✓" : index + 1}
+          {isCorrect ? <Check className="h-4 w-4" /> : index + 1}
         </div>
       </div>
 
@@ -89,12 +94,22 @@ function OptionCard({ index, text, isCorrect, onTextChange, onSelectCorrect, dis
         label={null}
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
-        placeholder={`Option ${index + 1}`}
+        placeholder={`Write option ${index + 1}`}
         disabled={disabled}
-        className={["bg-transparent text-sm", "border-gray-200 focus:border-blue-500 focus:ring-blue-200"].join(" ")}
+        className={[
+          "bg-slate-900 text-slate-100 placeholder:text-slate-500 border-slate-600",
+          "focus:border-blue-500 focus:ring-blue-500/30",
+        ].join(" ")}
       />
 
-      <div className="text-[10px] text-gray-400">Click to mark correct</div>
+      {isCorrect ? (
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-green-400">
+          <Check className="h-3.5 w-3.5" />
+          Correct Answer
+        </div>
+      ) : (
+        <div className="text-xs text-slate-500">Click to mark as correct</div>
+      )}
     </button>
   );
 }
@@ -109,64 +124,128 @@ function AccordionQuestionCard({
   isOpen,
   onToggle,
 }) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteModal(false);
+    onDelete(index);
+  };
+
+  const questionNumber = index + 1;
+
   return (
-    <Card padding="md" className="bg-white dark:bg-slate-800 shadow-sm">
+    <Card
+      padding="none"
+      className={[
+        "overflow-hidden border-slate-700 bg-slate-800/50 transition-all duration-200",
+        "hover:border-slate-600",
+      ].join(" ")}
+    >
+      {/* Header - Always visible */}
       <button
         type="button"
         onClick={onToggle}
         disabled={disabled}
         className="w-full text-left"
       >
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
+        <div className="flex items-center justify-between gap-3 p-4">
+          {/* Question Number & Badges */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700 text-sm font-bold text-white ring-1 ring-slate-600">
+              {questionNumber}
+            </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="primary" className="gap-1 text-xs py-0.5">
                 AI
                 <span aria-hidden="true">✨</span>
               </Badge>
               {question?.difficulty ? (
-                <Badge variant="neutral" className="text-xs py-0.5">{String(question.difficulty).toUpperCase()}</Badge>
+                <Badge variant="neutral" className="text-xs py-0.5">
+                  {String(question.difficulty).toUpperCase()}
+                </Badge>
               ) : null}
-              <Badge variant="success" className="text-xs py-0.5">{question?.marks ?? 1} pts</Badge>
+              <Badge variant="success" className="text-xs py-0.5">
+                {question?.marks ?? 1} pts
+              </Badge>
             </div>
-            <div className="text-xs text-gray-500">Q{index + 1}</div>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-slate-700 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-slate-600">
-              {isOpen ? "Hide" : "Edit"}
-            </span>
-            <Button
+            {/* Hide/Show Button */}
+            <button
               type="button"
-              variant="danger"
-              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(index);
+                onToggle();
               }}
               disabled={disabled}
-              className="h-8 px-2 text-xs"
+              className={[
+                "flex h-9 w-9 items-center justify-center rounded-lg border border-slate-600 transition-all duration-200",
+                "bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500/50",
+              ].join(" ")}
+              title={isOpen ? "Hide Question" : "Edit Question"}
             >
-              Delete
-            </Button>
+              {isOpen ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+
+            {/* Delete Button */}
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              disabled={disabled}
+              className={[
+                "flex h-9 w-9 items-center justify-center rounded-lg border border-slate-600 transition-all duration-200",
+                "bg-slate-700 text-slate-300 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400",
+                "focus:outline-none focus:ring-2 focus:ring-red-500/50",
+              ].join(" ")}
+              title="Delete Question"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
-        <div className="mt-2">
-          <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-            {question?.question_text?.trim() ? question.question_text : "(Empty question)"}
+        {/* Question Preview - Only show when collapsed */}
+        {!isOpen && (
+          <div className="border-t border-slate-700/50 px-4 pb-4">
+            <div className="truncate text-sm text-slate-300">
+              {question?.question_text?.trim() ? question.question_text : "(Empty question)"}
+            </div>
           </div>
-        </div>
+        )}
       </button>
 
-      {isOpen ? (
-        <div className="mt-3 space-y-3">
+      {/* Expanded Content */}
+      <div
+        className={[
+          "overflow-hidden border-t border-slate-700/50 transition-all duration-200",
+          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0",
+        ].join(" ")}
+      >
+        <div className="space-y-5 p-5">
+          {/* Question Text */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-300">
-              Question text
+            <label className="mb-2 block text-sm font-medium text-slate-300">
+              Question {questionNumber}
             </label>
             <textarea
-              className="w-full min-h-[80px] resize-none rounded-md border border-gray-300 px-2 py-1.5 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-100"
+              className={[
+                "w-full min-h-[120px] resize-none rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-sm text-white",
+                "placeholder:text-slate-500 outline-none transition-all duration-200",
+                "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30",
+              ].join(" ")}
+              placeholder="Enter your question text..."
               value={question.question_text}
               onChange={(e) =>
                 onChange(index, {
@@ -178,7 +257,8 @@ function AccordionQuestionCard({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {/* Marks & Correct Answer Row */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Input
               label="Marks"
               type="number"
@@ -192,19 +272,20 @@ function AccordionQuestionCard({
               disabled={disabled}
             />
 
-            <div className="flex flex-col gap-1">
-              <div className="text-xs font-medium text-slate-300">Correct answer</div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400">Select the option that is correct.</div>
+            <div className="flex flex-col gap-2">
+              <div className="text-sm font-medium text-slate-300">Correct Answer</div>
+              <div className="text-xs text-slate-500">Select the option that is correct</div>
             </div>
           </div>
 
-          <div className="pt-1">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Options</h3>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Mark one option as correct</div>
+          {/* Options Section */}
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-white">Options</h3>
+              <div className="text-xs text-slate-500">Mark one option as correct</div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[0, 1, 2, 3].map((i) => (
                 <OptionCard
                   key={i}
@@ -232,21 +313,53 @@ function AccordionQuestionCard({
               ))}
             </div>
 
-            <div className="mt-3">
+            {/* Add Question Button */}
+            <div className="mt-5">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="md"
                 disabled={disabled}
                 onClick={() => onAddQuestion()}
                 className="w-full sm:w-auto"
               >
-                + Add question
+                <Plus className="mr-2 h-4 w-4" />
+                Add Question
               </Button>
             </div>
           </div>
         </div>
-      ) : null}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete this question?"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              onClick={handleConfirmDelete}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-slate-400">This action can be undone.</p>
+      </Modal>
     </Card>
   );
 }
@@ -355,6 +468,11 @@ function CreateQuiz() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiGeneratedQuestions, setAiGeneratedQuestions] = useState([]);
   const [openQuestionIndex, setOpenQuestionIndex] = useState(null); // null means all expanded initially
+
+  // Undo deletion state
+  const [deletedQuestion, setDeletedQuestion] = useState(null);
+  const [deletedQuestionIndex, setDeletedQuestionIndex] = useState(null);
+  const [showUndoToast, setShowUndoToast] = useState(false);
 
   useEffect(() => {
     const navState = location?.state;
@@ -551,7 +669,36 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
   }
 
   function handleAiQuestionDelete(index) {
+    // Store the deleted question for undo
+    const questionToDelete = aiGeneratedQuestions[index];
+    setDeletedQuestion(questionToDelete);
+    setDeletedQuestionIndex(index);
+    setShowUndoToast(true);
+
+    // Remove the question
     setAiGeneratedQuestions((prev) => prev.filter((_, i) => i !== index));
+
+    // Clear undo toast after 8 seconds
+    setTimeout(() => {
+      setShowUndoToast(false);
+      setDeletedQuestion(null);
+      setDeletedQuestionIndex(null);
+    }, 8000);
+  }
+
+  function handleUndoDelete() {
+    if (!deletedQuestion || deletedQuestionIndex === null) return;
+
+    setAiGeneratedQuestions((prev) => {
+      const copy = [...prev];
+      copy.splice(deletedQuestionIndex, 0, deletedQuestion);
+      return copy;
+    });
+
+    setShowUndoToast(false);
+    setDeletedQuestion(null);
+    setDeletedQuestionIndex(null);
+    setMessage("");
   }
 
   function handleAiAddManualQuestion() {
@@ -1017,6 +1164,33 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
                 </div>
               )}
             </div>
+
+            {/* Undo Toast */}
+            {showUndoToast && (
+              <div
+                className={[
+                  "mt-4 flex items-center justify-between rounded-xl border border-slate-600 bg-slate-700 px-4 py-3",
+                  "animate-in slide-in-from-top-2 fade-in duration-200",
+                ].join(" ")}
+                role="status"
+              >
+                <div className="flex items-center gap-2 text-sm text-white">
+                  <Trash2 className="h-4 w-4 text-slate-400" />
+                  <span>Question deleted.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUndoDelete}
+                  className={[
+                    "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white",
+                    "bg-blue-600 hover:bg-blue-700 transition-colors duration-200",
+                  ].join(" ")}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Undo
+                </button>
+              </div>
+            )}
 
             <div className="mt-4 space-y-2">
               {isSavingQuiz ? (
