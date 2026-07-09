@@ -121,7 +121,7 @@ function Profile() {
 
                 <button
                     onClick={handleLogout}
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+                    className="hidden sm:inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
                 >
                     Logout
                 </button>
