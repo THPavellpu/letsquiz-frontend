@@ -247,12 +247,62 @@ function Navbar({ className = "" }) {
 
           <div className="flex items-center gap-2">
             <Branding size="w-12 h-12" />
-            <span className="hidden text-xs font-medium text-slate-400 sm:inline">
+            <span className="hidden text-xs font-medium text-slate-400 md:block lg:hidden">
               {routeLabel}
             </span>
           </div>
         </div>
 
+        {/* Desktop Navigation - visible on big screens */}
+        <nav className="hidden sm:flex items-center gap-1" role="navigation" aria-label="Desktop navigation">
+          <ul className="flex items-center gap-1" role="list">
+            {mobileNavItems.map((item) => {
+              const isActive = location.pathname === item.href ||
+                (item.href !== "/" && location.pathname.startsWith(item.href));
+              return (
+                <li key={item.key} role="none">
+                  <button
+                    type="button"
+                    onClick={() => handleMobileNavClick(item.href)}
+                    className={[
+                      "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition duration-200",
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-md"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                    ].join(" ")}
+                    aria-current={isActive ? "page" : undefined}
+                    role="menuitem"
+                  >
+                    <span className={isActive ? "text-white" : "text-slate-400"}>
+                      {getIcon(item.key)}
+                    </span>
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+            {mobileMenuActions.map((action) => (
+              <li key={action.key} role="none">
+                <button
+                  type="button"
+                  onClick={action.onClick}
+                  className={[
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition duration-200",
+                    action.isLogout
+                      ? "text-red-400 hover:bg-red-900/40 hover:text-red-300"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                  ].join(" ")}
+                  role="menuitem"
+                >
+                  <span className="text-red-400">
+                    {getIcon(action.key)}
+                  </span>
+                  <span className="hidden lg:inline">{action.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
 
       {/* Mobile Navigation Drawer - Rendered via Portal to avoid sticky stacking context issues */}
