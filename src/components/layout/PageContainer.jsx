@@ -19,7 +19,6 @@ function PageContainer({ className = "", children, maxWidth = "7xl" }) {
       { key: "dashboard", label: "Dashboard", href: "/dashboard" },
       { key: "create-quiz", label: "Create Quiz", href: "/create-quiz" },
       { key: "join-quiz", label: "Join Quiz", href: "/join-quiz" },
-      { key: "my-quizzes", label: "My Quizzes", href: "/my-quizzes" },
       { key: "my-performance", label: "My Performance", href: "/my-performance" },
       { key: "profile", label: "Profile", href: "/profile" },
     ];
