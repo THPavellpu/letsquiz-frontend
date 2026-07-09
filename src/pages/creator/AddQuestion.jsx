@@ -262,28 +262,18 @@ function AddQuestion() {
 
       setMessage("Question created successfully.");
 
-      // Save question increments always
-      setQuestionOrder((prev) => prev + 1);
-
-      // Clear based on mode
+      // Clear and increment based on mode
       if (addAnother) {
+        // Save and Add Another: increment order and clear fields for next question
+        setQuestionOrder((prev) => prev + 1);
         setQuestionText("");
         setOption1("");
         setOption2("");
         setOption3("");
         setOption4("");
-
-        // preserve quizId implicitly via params
-        // marks/time_limit_seconds: per spec, only clear question fields
-        // If you want to preserve marks/time too, remove these lines.
-        // We do NOT clear them here to match the earlier component behavior.
       } else {
-        // Save Question: clear everything except order (so next save shows next order)
-        setQuestionText("");
-        setOption1("");
-        setOption2("");
-        setOption3("");
-        setOption4("");
+        // Save Question: stay on current question - do not increment order or clear fields
+        // User can edit/save the same question multiple times if needed
       }
     } catch (err) {
       setError(JSON.stringify(err?.response?.data || err?.message || err));

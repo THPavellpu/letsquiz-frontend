@@ -68,16 +68,16 @@ function OptionCard({ index, text, isCorrect, onTextChange, onSelectCorrect, dis
       disabled={disabled}
       onClick={onSelectCorrect}
       className={[
-        "group relative flex flex-col gap-2 rounded-2xl border p-4 text-left transition",
-        isCorrect ? "border-blue-300 bg-blue-50 ring-2 ring-blue-200" : "border-gray-200 bg-white hover:bg-gray-50",
+        "group relative flex flex-col gap-1 rounded-lg border p-2 text-left transition",
+        isCorrect ? "border-green-300 bg-green-50 ring-1 ring-green-200" : "border-gray-200 bg-white hover:bg-gray-50",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Option {index + 1}</div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">Option {index + 1}</div>
         <div
           className={[
-            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold",
-            isCorrect ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-gray-200",
+            "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+            isCorrect ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-gray-200",
           ].join(" ")}
           aria-hidden="true"
         >
@@ -89,12 +89,12 @@ function OptionCard({ index, text, isCorrect, onTextChange, onSelectCorrect, dis
         label={null}
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
-        placeholder={`Write option ${index + 1}`}
+        placeholder={`Option ${index + 1}`}
         disabled={disabled}
-        className={["bg-transparent", "border-gray-200 focus:border-blue-500 focus:ring-blue-200"].join(" ")}
+        className={["bg-transparent text-sm", "border-gray-200 focus:border-blue-500 focus:ring-blue-200"].join(" ")}
       />
 
-      <div className="text-xs text-gray-500">Click to mark as correct</div>
+      <div className="text-[10px] text-gray-400">Click to mark correct</div>
     </button>
   );
 }
@@ -110,30 +110,30 @@ function AccordionQuestionCard({
   onToggle,
 }) {
   return (
-    <Card padding="lg" className="bg-white dark:bg-slate-800 shadow-sm">
+    <Card padding="md" className="bg-white dark:bg-slate-800 shadow-sm">
       <button
         type="button"
         onClick={onToggle}
         disabled={disabled}
         className="w-full text-left"
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="primary" className="gap-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="primary" className="gap-1 text-xs py-0.5">
                 AI
                 <span aria-hidden="true">✨</span>
               </Badge>
               {question?.difficulty ? (
-                <Badge variant="neutral">{String(question.difficulty).toUpperCase()}</Badge>
+                <Badge variant="neutral" className="text-xs py-0.5">{String(question.difficulty).toUpperCase()}</Badge>
               ) : null}
-              <Badge variant="success">{question?.marks ?? 1} Marks</Badge>
+              <Badge variant="success" className="text-xs py-0.5">{question?.marks ?? 1} pts</Badge>
             </div>
-            <div className="text-xs text-gray-500">Question {index + 1}</div>
+            <div className="text-xs text-gray-500">Q{index + 1}</div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold text-white ring-1 ring-slate-600">
+            <span className="inline-flex items-center justify-center rounded-full bg-slate-700 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-slate-600">
               {isOpen ? "Hide" : "Edit"}
             </span>
             <Button
@@ -145,28 +145,28 @@ function AccordionQuestionCard({
                 onDelete(index);
               }}
               disabled={disabled}
-              className="h-10 px-3"
+              className="h-8 px-2 text-xs"
             >
               Delete
             </Button>
           </div>
         </div>
 
-        <div className="mt-3">
-          <div className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="mt-2">
+          <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
             {question?.question_text?.trim() ? question.question_text : "(Empty question)"}
           </div>
         </div>
       </button>
 
       {isOpen ? (
-        <div className="mt-4 space-y-4">
+        <div className="mt-3 space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">
+            <label className="mb-1 block text-xs font-medium text-slate-300">
               Question text
             </label>
             <textarea
-              className="w-full min-h-[110px] resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-100"
+              className="w-full min-h-[80px] resize-none rounded-md border border-gray-300 px-2 py-1.5 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-100"
               value={question.question_text}
               onChange={(e) =>
                 onChange(index, {
@@ -178,7 +178,7 @@ function AccordionQuestionCard({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Input
               label="Marks"
               type="number"
@@ -193,18 +193,18 @@ function AccordionQuestionCard({
             />
 
             <div className="flex flex-col gap-1">
-              <div className="text-sm font-medium text-slate-300">Correct answer</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Select the option that is correct.</div>
+              <div className="text-xs font-medium text-slate-300">Correct answer</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400">Select the option that is correct.</div>
             </div>
           </div>
 
-          <div className="pt-2">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Options</h3>
+          <div className="pt-1">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Options</h3>
               <div className="text-xs text-gray-500 dark:text-gray-400">Mark one option as correct</div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {[0, 1, 2, 3].map((i) => (
                 <OptionCard
                   key={i}
@@ -232,16 +232,16 @@ function AccordionQuestionCard({
               ))}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-3">
               <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                size="sm"
                 disabled={disabled}
                 onClick={() => onAddQuestion()}
                 className="w-full sm:w-auto"
               >
-                Add question
+                + Add question
               </Button>
             </div>
           </div>
@@ -987,16 +987,16 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
             ) : null}
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800" shadow={true} padding="lg">
-            <div className="flex items-center justify-between gap-4">
+          <Card className="bg-white dark:bg-slate-800" shadow={true} padding="md">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Edit Questions</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Update text, options, correct answer and marks.</div>
+                <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Update text, options, correct answer and marks.</div>
               </div>
-              <Badge variant="primary">Editable</Badge>
+              <Badge variant="primary" className="text-xs">Editable</Badge>
             </div>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-3 space-y-2">
               {aiGeneratedQuestions.length ? (
                 aiGeneratedQuestions.map((q, idx) => (
                   <AccordionQuestionCard
@@ -1018,9 +1018,9 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
               )}
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 space-y-2">
               {isSavingQuiz ? (
-                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
                   Finalizing quiz… Please wait.
                 </div>
               ) : null}
@@ -1056,7 +1056,7 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
                 </div>
               </div>
 
-              <div>
+              <div className="mt-2">
                 <Button
                   type="button"
                   variant="outline"

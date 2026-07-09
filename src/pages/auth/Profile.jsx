@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
     getProfile,
     getProfileStats,
-    logoutUser,
 } from "../../api/authApi";
 
-
-import { useAuth } from "../../context/AuthContext";
-
-import { 
+import {
     BarChart3,
     ClipboardCheck,
     LayoutDashboard,
@@ -22,9 +17,6 @@ import StatCard from "../../components/ui/StatCard";
 function Profile() {
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState(null);
-    const navigate = useNavigate();
-    const { logout } = useAuth();
-
 
     useEffect(() => {
         async function fetchProfile() {
@@ -49,18 +41,6 @@ function Profile() {
         fetchProfile();
         loadProfileStats();
     }, []);
-
-
-    async function handleLogout() {
-        try {
-            await logoutUser();
-        } catch (error) {
-            console.error(error);
-        }
-
-        logout();
-        navigate("/login");
-    }
 
     const computedStats = useMemo(() => {
         const totalQuizzes =
@@ -118,13 +98,6 @@ function Profile() {
                         </span>
                     </div>
                 </div>
-
-                <button
-                    onClick={handleLogout}
-                    className="hidden sm:inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
-                >
-                    Logout
-                </button>
             </div>
 
             <div>
