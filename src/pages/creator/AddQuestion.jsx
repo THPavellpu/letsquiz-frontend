@@ -140,6 +140,9 @@ function AddQuestion() {
 
   const [correctAnswer, setCorrectAnswer] = useState("1");
 
+  // Track whether the current question has been saved to prevent duplicate submissions
+  const [isSaved, setIsSaved] = useState(false);
+
   function validateOptions({ opts, correctIdx }) {
     const normalized = opts.map((o) => String(o ?? "").trim());
 
@@ -240,6 +243,11 @@ function AddQuestion() {
   }, [quizId]);
 
   async function handleSaveQuestion({ addAnother }) {
+    // Prevent duplicate submissions - if already saved and not adding another, block it
+    if (isSaved && !addAnother) {
+      setError("Question already saved. Click 'Save and Add Another' to add a new question.");
+      return;
+    }
 
     if (!currentValidation.ok) {
       setError(currentValidation.error);
@@ -250,11 +258,14 @@ function AddQuestion() {
     setError("");
     setIsSubmitting(true);
 
+    // For "Save and Add Another": increment order BEFORE the API call to prevent duplicate order
+    const nextOrder = addAnother ? questionOrder + 1 : questionOrder;
+
     try {
       await createQuestionWithOptions({
         quiz: quizId,
         question_text,
-        order: questionOrder,
+        order: nextOrder,
         marks,
         time_limit_seconds,
         options: [
@@ -265,8 +276,6 @@ function AddQuestion() {
         ],
       });
 
-      setMessage("Question created successfully.");
-
       // Clear and increment based on mode
       if (addAnother) {
         // Save and Add Another: increment order and clear fields for next question
@@ -276,12 +285,23 @@ function AddQuestion() {
         setOption2("");
         setOption3("");
         setOption4("");
+        setCorrectAnswer("1");
+        setMarks(1);
+        setTimeLimitSeconds(30);
+        setIsSaved(false);
+        setMessage("Question created successfully. Ready for next question.");
       } else {
-        // Save Question: stay on current question - do not increment order or clear fields
-        // User can edit/save the same question multiple times if needed
+        // Save Question: mark as saved to prevent duplicate submissions
+        setIsSaved(true);
+        setMessage("Question created successfully.");
       }
     } catch (err) {
-      setError(JSON.stringify(err?.response?.data || err?.message || err));
+      // If duplicate error, set isSaved to false to allow retry with proper order
+      const errorData = err?.response?.data || {};
+      if (errorData.order || errorData.non_field_errors?.some(e => e.toLowerCase().includes('duplicate'))) {
+        setIsSaved(false);
+      }
+      setError(JSON.stringify(errorData || err?.message || err));
     } finally {
       setIsSubmitting(false);
     }
@@ -338,7 +358,10 @@ function AddQuestion() {
                 className="w-full min-h-[120px] resize-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 placeholder="Question text"
                 value={question_text}
-                onChange={(e) => setQuestionText(e.target.value)}
+                onChange={(e) => {
+                  setQuestionText(e.target.value);
+                  setIsSaved(false);
+                }}
               />
             </div>
 
@@ -347,14 +370,20 @@ function AddQuestion() {
                 label="Marks"
                 type="number"
                 value={marks}
-                onChange={(e) => setMarks(Number(e.target.value))}
+                onChange={(e) => {
+                  setMarks(Number(e.target.value));
+                  setIsSaved(false);
+                }}
               />
 
               <Input
                 label="Time limit (seconds)"
                 type="number"
                 value={time_limit_seconds}
-                onChange={(e) => setTimeLimitSeconds(Number(e.target.value))}
+                onChange={(e) => {
+                  setTimeLimitSeconds(Number(e.target.value));
+                  setIsSaved(false);
+                }}
               />
             </div>
 
@@ -369,30 +398,54 @@ function AddQuestion() {
                   index={0}
                   text={option1}
                   isCorrect={correctAnswer === "1"}
-                  onSelectCorrect={() => setCorrectAnswer("1")}
-                  onTextChange={setOption1}
+                  onSelectCorrect={() => {
+                    setCorrectAnswer("1");
+                    setIsSaved(false);
+                  }}
+                  onTextChange={(val) => {
+                    setOption1(val);
+                    setIsSaved(false);
+                  }}
                   hasError={invalidOptionIndices.has(0)}
                 />
                 <OptionCard
                   index={1}
                   text={option2}
                   isCorrect={correctAnswer === "2"}
-                  onSelectCorrect={() => setCorrectAnswer("2")}
-                  onTextChange={setOption2}
+                  onSelectCorrect={() => {
+                    setCorrectAnswer("2");
+                    setIsSaved(false);
+                  }}
+                  onTextChange={(val) => {
+                    setOption2(val);
+                    setIsSaved(false);
+                  }}
                 />
                 <OptionCard
                   index={2}
                   text={option3}
                   isCorrect={correctAnswer === "3"}
-                  onSelectCorrect={() => setCorrectAnswer("3")}
-                  onTextChange={setOption3}
+                  onSelectCorrect={() => {
+                    setCorrectAnswer("3");
+                    setIsSaved(false);
+                  }}
+                  onTextChange={(val) => {
+                    setOption3(val);
+                    setIsSaved(false);
+                  }}
                 />
                 <OptionCard
                   index={3}
                   text={option4}
                   isCorrect={correctAnswer === "4"}
-                  onSelectCorrect={() => setCorrectAnswer("4")}
-                  onTextChange={setOption4}
+                  onSelectCorrect={() => {
+                    setCorrectAnswer("4");
+                    setIsSaved(false);
+                  }}
+                  onTextChange={(val) => {
+                    setOption4(val);
+                    setIsSaved(false);
+                  }}
                 />
               </div>
             </div>
@@ -402,11 +455,11 @@ function AddQuestion() {
                 type="submit"
                 variant="primary"
                 size="lg"
-                disabled={isSubmitting || !canSubmit}
+                disabled={isSubmitting || !canSubmit || isSaved}
                 isLoading={isSubmitting}
                 className="w-full sm:w-auto"
               >
-                Save Question
+                {isSaved ? "Question Saved" : "Save Question"}
               </Button>
 
               <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
