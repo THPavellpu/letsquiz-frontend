@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Eye, EyeOff, Trash2, Check, Plus, RotateCcw } from "lucide-react";
@@ -424,6 +424,64 @@ function CreateQuiz() {
     return local.toISOString();
   }, [joinDeadlineMode, joinDeadlineDate, joinDeadlineTime]);
 
+  // Validate quiz form fields
+  function validateQuizForm() {
+    const errors = {};
+    const errorMessages = [];
+
+    // Validate Quiz Title (required)
+    if (!title || !title.trim()) {
+      errors.title = "Quiz Title is required.";
+      errorMessages.push("• Quiz Title is required.");
+    }
+
+    // Validate Total Time (required when useQuizTimer is enabled)
+    if (useQuizTimer) {
+      if (!totalTimeMinutes || totalTimeMinutes.trim() === "") {
+        errors.totalTimeMinutes = "Quiz Duration is required when timer is enabled.";
+        errorMessages.push("• Quiz Duration is required when timer is enabled.");
+      } else if (Number(totalTimeMinutes) <= 0) {
+        errors.totalTimeMinutes = "Quiz Duration must be a positive number.";
+        errorMessages.push("• Quiz Duration must be a positive number.");
+      }
+    }
+
+    // Validate Question Time Limit (required when useQuestionTimer is enabled)
+    if (useQuestionTimer) {
+      if (!questionTimeLimit || questionTimeLimit <= 0) {
+        errors.questionTimeLimit = "Question Time Limit is required when per-question timer is enabled.";
+        errorMessages.push("• Question Time Limit is required when per-question timer is enabled.");
+      } else if (questionTimeLimit < 5 || questionTimeLimit > 300) {
+        errors.questionTimeLimit = "Question Time Limit must be between 5 and 300 seconds.";
+        errorMessages.push("• Question Time Limit must be between 5 and 300 seconds.");
+      }
+    }
+
+    // Validate Join Deadline Date/Time (required when join deadline is set)
+    if (joinDeadlineMode === "set") {
+      if (!joinDeadlineDate) {
+        errors.joinDeadlineDate = "Join Deadline Date is required.";
+        errorMessages.push("• Join Deadline Date is required.");
+      }
+      if (!joinDeadlineTime) {
+        errors.joinDeadlineTime = "Join Deadline Time is required.";
+        errorMessages.push("• Join Deadline Time is required.");
+      }
+    }
+
+    setFormErrors(errors);
+    return { isValid: Object.keys(errors).length === 0, errorMessages, errors };
+  }
+
+  // Clear error when field is changed
+  function clearFieldError(fieldName) {
+    setFormErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+  }
+
   function getFriendlyJoinDeadlineError(err) {
     const msg = String(
       err?.response?.data?.detail ??
@@ -473,6 +531,10 @@ function CreateQuiz() {
   const [deletedQuestion, setDeletedQuestion] = useState(null);
   const [deletedQuestionIndex, setDeletedQuestionIndex] = useState(null);
   const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // Form validation state
+  const [formErrors, setFormErrors] = useState({});
+  const titleInputRef = useRef(null);
 
   useEffect(() => {
     const navState = location?.state;
@@ -632,6 +694,7 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
   async function handleAiGenerate() {
     setMessage("");
     setError("");
+    setFormErrors({});
     setIsGenerating(true);
 
     try {
@@ -755,6 +818,38 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
   const [aiQuizId, setAiQuizId] = useState(null);
 
   async function handleAiFinishQuiz() {
+    // Validate quiz form before proceeding
+    const validation = validateQuizForm();
+
+    if (!validation.isValid) {
+      // Display validation error message
+      const errorMsg = "Please complete all required quiz information before finishing the quiz.\n\n" + validation.errorMessages.join("\n");
+      setError(errorMsg);
+
+      // Scroll to first invalid field and focus
+      const firstErrorField = Object.keys(validation.errors)[0];
+
+      // Handle different field types
+      if (firstErrorField === "title" && titleInputRef.current) {
+        titleInputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        titleInputRef.current.focus();
+      } else if (firstErrorField === "totalTimeMinutes") {
+        const totalTimeInput = document.querySelector('input[placeholder="30"]');
+        if (totalTimeInput) {
+          totalTimeInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          totalTimeInput.focus();
+        }
+      } else if (firstErrorField === "questionTimeLimit") {
+        const questionTimeInput = document.querySelector('input[type="number"]');
+        if (questionTimeInput) {
+          questionTimeInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          questionTimeInput.focus();
+        }
+      }
+
+      return;
+    }
+
     // PART 8: Finish Quiz Creation - publishes and navigates to quiz summary
     setMessage("");
     setError("");
@@ -815,6 +910,7 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
     setOpenQuestionIndex(null);
     setError("");
     setMessage("");
+    setFormErrors({});
   }
 
   return (
@@ -910,24 +1006,59 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
 
           <form onSubmit={handleManualSubmit} className="space-y-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input label="Quiz Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. React Basics" />
-              <Input
-                label="Total Time (minutes)"
-                type="number"
-                value={totalTimeMinutes}
-                onChange={(e) => setTotalTimeMinutes(e.target.value)}
-                placeholder="30"
-              />
+              <div>
+                <Input
+                  ref={titleInputRef}
+                  label="Quiz Title"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    clearFieldError("title");
+                  }}
+                  placeholder="e.g. React Basics"
+                  className={formErrors.title ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : ""}
+                />
+                {formErrors.title && (
+                  <p className="mt-1 text-xs font-medium text-red-500">{formErrors.title}</p>
+                )}
+              </div>
+              <div>
+                <Input
+                  label="Total Time (minutes)"
+                  type="number"
+                  value={totalTimeMinutes}
+                  onChange={(e) => {
+                    setTotalTimeMinutes(e.target.value);
+                    clearFieldError("totalTimeMinutes");
+                  }}
+                  placeholder="30"
+                  className={formErrors.totalTimeMinutes ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : ""}
+                />
+                {formErrors.totalTimeMinutes && (
+                  <p className="mt-1 text-xs font-medium text-red-500">{formErrors.totalTimeMinutes}</p>
+                )}
+              </div>
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-300">Description</label>
               <textarea
-                className="w-full min-h-[110px] resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-100"
+                className={[
+                  "w-full min-h-[110px] resize-none rounded-md border px-3 py-2 text-sm outline-none transition-colors",
+                  "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+                  "dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-100",
+                  formErrors.description ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : "border-gray-300",
+                ].join(" ")}
                 placeholder="What will players learn or practice?"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  clearFieldError("description");
+                }}
               />
+              {formErrors.description && (
+                <p className="mt-1 text-xs font-medium text-red-500">{formErrors.description}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -999,9 +1130,20 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
                     <input
                       type="date"
                       value={joinDeadlineDate}
-                      onChange={(e) => setJoinDeadlineDate(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                      onChange={(e) => {
+                        setJoinDeadlineDate(e.target.value);
+                        clearFieldError("joinDeadlineDate");
+                      }}
+                      className={[
+                        "w-full rounded-md border bg-white px-3 py-2 text-sm outline-none transition-colors",
+                        "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+                        "dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100",
+                        formErrors.joinDeadlineDate ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : "border-gray-300",
+                      ].join(" ")}
                     />
+                    {formErrors.joinDeadlineDate && (
+                      <p className="mt-1 text-xs font-medium text-red-500">{formErrors.joinDeadlineDate}</p>
+                    )}
                   </div>
 
                   <div>
@@ -1010,9 +1152,20 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
                       type="time"
                       step={60}
                       value={joinDeadlineTime}
-                      onChange={(e) => setJoinDeadlineTime(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                      onChange={(e) => {
+                        setJoinDeadlineTime(e.target.value);
+                        clearFieldError("joinDeadlineTime");
+                      }}
+                      className={[
+                        "w-full rounded-md border bg-white px-3 py-2 text-sm outline-none transition-colors",
+                        "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+                        "dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100",
+                        formErrors.joinDeadlineTime ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : "border-gray-300",
+                      ].join(" ")}
                     />
+                    {formErrors.joinDeadlineTime && (
+                      <p className="mt-1 text-xs font-medium text-red-500">{formErrors.joinDeadlineTime}</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -1021,15 +1174,24 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
             {/* Question Time Limit - shown when useQuestionTimer is enabled */}
             {useQuestionTimer && (
               <div className="mt-4">
-                <Input
-                  label="Question Time Limit (seconds)"
-                  type="number"
-                  min={5}
-                  max={300}
-                  value={questionTimeLimit}
-                  onChange={(e) => setQuestionTimeLimit(Number(e.target.value) || 30)}
-                  placeholder="30"
-                />
+                <div>
+                  <Input
+                    label="Question Time Limit (seconds)"
+                    type="number"
+                    min={5}
+                    max={300}
+                    value={questionTimeLimit}
+                    onChange={(e) => {
+                      setQuestionTimeLimit(Number(e.target.value) || 30);
+                      clearFieldError("questionTimeLimit");
+                    }}
+                    placeholder="30"
+                    className={formErrors.questionTimeLimit ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : ""}
+                  />
+                  {formErrors.questionTimeLimit && (
+                    <p className="mt-1 text-xs font-medium text-red-500">{formErrors.questionTimeLimit}</p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1055,84 +1217,87 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
       {/* AI flow */}
       {mode === "ai" ? (
         <div className="space-y-6">
-          <Card className="bg-white dark:bg-slate-800" shadow={true} padding="lg">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  AI Generator <span aria-hidden="true" className="ml-1">✨</span>
+          {/* AI Generator - only shown when no questions generated yet */}
+          {aiGeneratedQuestions.length === 0 && (
+            <Card className="bg-white dark:bg-slate-800" shadow={true} padding="lg">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    AI Generator <span aria-hidden="true" className="ml-1">✨</span>
+                  </div>
+                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Generate questions automatically with Gemini.</div>
                 </div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Generate questions automatically with Gemini.</div>
+                <Badge variant="success">AI</Badge>
               </div>
-              <Badge variant="success">AI</Badge>
-            </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <Input
-                label="Topic"
-                value={aiTopic}
-                onChange={(e) => setAiTopic(e.target.value)}
-                placeholder="Probability and Statistics BTech"
-                className="md:col-span-1"
-              />
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Input
+                  label="Topic"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder="Probability and Statistics BTech"
+                  className="md:col-span-1"
+                />
 
-              <Input
-                label="Number of Questions"
-                type="number"
-                min={1}
-                max={50}
-                value={aiNumberOfQuestions}
-                onChange={(e) => setAiNumberOfQuestions(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
-              />
+                <Input
+                  label="Number of Questions"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={aiNumberOfQuestions}
+                  onChange={(e) => setAiNumberOfQuestions(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                />
 
-              <div className="space-y-2">
-                <div className="text-sm font-medium text-slate-300">Difficulty</div>
-                <select
-                  value={aiDifficulty}
-                  onChange={(e) => setAiDifficulty(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-slate-300">Difficulty</div>
+                  <select
+                    value={aiDifficulty}
+                    onChange={(e) => setAiDifficulty(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  disabled={isGenerating || !aiTopic || isSavingQuiz}
+                  isLoading={isGenerating}
+                  onClick={handleAiGenerate}
+                  className="w-full sm:w-auto"
                 >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-            </div>
+                  ✨ Generate with AI
+                </Button>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                disabled={isGenerating || !aiTopic || isSavingQuiz}
-                isLoading={isGenerating}
-                onClick={handleAiGenerate}
-                className="w-full sm:w-auto"
-              >
-                ✨ Generate with AI
-              </Button>
-
-              <div className="min-h-[32px] text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                {isGenerating ? (
-                  <>
-                    <LoadingSpinner size={18} />
-                    <span>Generating questions... Please wait.</span>
-                  </>
-                ) : null}
+                <div className="min-h-[32px] text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                  {isGenerating ? (
+                    <>
+                      <LoadingSpinner size={18} />
+                      <span>Generating questions... Please wait.</span>
+                    </>
+                  ) : null}
+                </div>
               </div>
-            </div>
 
-            {error ? (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
-                {error}
-              </div>
-            ) : null}
+              {error ? (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">
+                  {error}
+                </div>
+              ) : null}
 
-            {message ? (
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">
-                {message}
-              </div>
-            ) : null}
-          </Card>
+              {message ? (
+                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">
+                  {message}
+                </div>
+              ) : null}
+            </Card>
+          )}
 
           <Card className="bg-white dark:bg-slate-800" shadow={true} padding="md">
             <div className="flex items-center justify-between gap-3">

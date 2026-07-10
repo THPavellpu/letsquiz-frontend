@@ -1,12 +1,13 @@
 import React from 'react'
+import { forwardRef } from 'react'
 
-function Input({
+const Input = forwardRef(function Input({
   label,
   error,
   hint,
   className = '',
   ...props
-}) {
+}, ref) {
   const hasError = Boolean(error)
 
   return (
@@ -18,6 +19,7 @@ function Input({
       ) : null}
 
       <input
+        ref={ref}
         className={[
           'w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors',
           hasError
@@ -35,7 +37,7 @@ function Input({
       ) : null}
     </div>
   )
-}
+})
 
 export default Input
 
