@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 
 function Button({
   variant = 'primary',
@@ -8,46 +9,54 @@ function Button({
   loadingText = 'Loading...',
   disabled = false,
   children,
+  icon: Icon,
+  iconPosition = 'left',
   ...props
 }) {
   const base =
-    'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center rounded-2xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]'
 
   const variants = {
     primary:
-      'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700',
+      'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500',
     secondary:
-      'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
-    ghost:
-      'bg-transparent text-gray-900 hover:bg-gray-100 focus:ring-gray-300 dark:text-gray-100 dark:hover:bg-gray-800 dark:focus:ring-gray-600',
+      'bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-slate-500 dark:bg-slate-700 dark:hover:bg-slate-600',
     outline:
-      'border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600',
+      'border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800 hover:border-slate-500 focus:ring-slate-500 dark:border-slate-600 dark:hover:bg-slate-800',
+    ghost:
+      'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white focus:ring-slate-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
     danger:
-      'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700',
+      'bg-red-600 text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/25 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-500',
+    success:
+      'bg-emerald-600 text-white hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/25 focus:ring-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500',
   }
 
   const sizes = {
-    // Mobile-first: ensure minimum touch target height (>=48px)
-    sm: 'h-12 px-4 text-base',
-    md: 'h-12 px-5 text-base',
-    lg: 'h-12 px-6 text-base',
+    sm: 'h-10 px-4 text-sm gap-1.5',
+    md: 'h-12 px-5 text-sm gap-2',
+    lg: 'h-14 px-6 text-base gap-2',
   }
 
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
       className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
       {isLoading ? (
         <span className="inline-flex items-center gap-2">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
           <span>{loadingText}</span>
         </span>
       ) : (
-        children
+        <>
+          {Icon && iconPosition === 'left' && <Icon className="h-4 w-4" />}
+          {children}
+          {Icon && iconPosition === 'right' && <Icon className="h-4 w-4" />}
+        </>
       )}
-    </button>
+    </motion.button>
   )
 }
 

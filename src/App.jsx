@@ -116,7 +116,7 @@ function App() {
         path="/quiz/:attemptId"
         element={
           <ProtectedRoute>
-            <PageContainer>
+            <PageContainer showNavbar={false} showFooter={false}>
               <QuizPage />
             </PageContainer>
           </ProtectedRoute>
@@ -127,7 +127,7 @@ function App() {
         path="/results/:attemptId"
         element={
           <ProtectedRoute>
-            <PageContainer>
+            <PageContainer showNavbar={false} showFooter={false}>
               <ResultPage />
             </PageContainer>
           </ProtectedRoute>

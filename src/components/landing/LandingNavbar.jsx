@@ -51,6 +51,17 @@ function LandingNavbar() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // lock body scroll when mobile menu is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    if (mobileOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = prev || "";
+
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [mobileOpen]);
+
   useEffect(() => {
     function onDocMouseDown(e) {
       if (!mobileOpen) return;
@@ -198,7 +209,7 @@ function LandingNavbar() {
                     key={item.key}
                     type="button"
                     onClick={onClick}
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left"
+                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left min-h-[48px]"
                   >
                     <span className="text-sm font-semibold text-white/90">{item.label}</span>
                     <span className="rounded-full border border-indigo-300/30 bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-200">
@@ -216,7 +227,7 @@ function LandingNavbar() {
                     setMobileOpen(false);
                     item.onClick?.();
                   }}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left"
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left min-h-[48px]"
                 >
                   <span className="text-sm font-semibold text-white/90">{item.label}</span>
                 </button>
@@ -226,13 +237,13 @@ function LandingNavbar() {
             <div className="mt-3 h-px bg-white/10" />
 
             {isAuthenticated ? (
-              <button
+                <button
                 type="button"
                 onClick={() => {
                   setMobileOpen(false);
                   navigate("/dashboard");
                 }}
-                className="rounded-xl border border-white/10 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-3 text-left text-sm font-semibold text-white"
+                className="rounded-xl border border-white/10 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-3 text-left text-sm font-semibold text-white min-h-[48px]"
               >
                 Go to Dashboard
               </button>
@@ -244,7 +255,7 @@ function LandingNavbar() {
                     setMobileOpen(false);
                     navigate("/login");
                   }}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white/90"
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white/90 min-h-[48px]"
                 >
                   Login
                 </button>
@@ -254,7 +265,7 @@ function LandingNavbar() {
                     setMobileOpen(false);
                     navigate("/register");
                   }}
-                  className="rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-3 text-left text-sm font-semibold text-white"
+                  className="rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-3 text-left text-sm font-semibold text-white min-h-[48px]"
                 >
                   Sign Up
                 </button>

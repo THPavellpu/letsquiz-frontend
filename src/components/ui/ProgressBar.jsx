@@ -11,7 +11,7 @@ function ProgressBar({
   return (
     <div className={['w-full', className].join(' ')}>
       <div className="flex items-center justify-between gap-3">
-        <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+        <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
           <div
             className="h-full rounded-full bg-blue-600 transition-[width] duration-300"
 

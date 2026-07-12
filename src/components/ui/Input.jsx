@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId } from 'react'
 import { forwardRef } from 'react'
 
 const Input = forwardRef(function Input({
@@ -6,34 +6,51 @@ const Input = forwardRef(function Input({
   error,
   hint,
   className = '',
+  icon: Icon,
+  id,
   ...props
 }, ref) {
   const hasError = Boolean(error)
+  const generated = useId();
+  const inputId = id || `input-${generated}`;
+  const errorId = `${inputId}-error`;
 
   return (
     <div className="w-full">
       {label ? (
-        <label className="mb-1 block text-sm font-medium text-slate-300">
+        <label htmlFor={inputId} className="mb-2 block text-sm font-medium text-slate-300">
           {label}
         </label>
       ) : null}
 
-      <input
-        ref={ref}
-        className={[
-          'w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors',
-          hasError
-            ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-red-700 dark:focus:border-red-400 dark:focus:ring-red-900/40'
-            : 'border-slate-600 bg-slate-800 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900/40',
-          className,
-        ].join(' ')}
-        {...props}
-      />
+      <div className="relative">
+        {Icon && (
+          <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
+        <input
+          id={inputId}
+          ref={ref}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? errorId : hint ? `${inputId}-hint` : undefined}
+          className={[
+            'w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-sm text-slate-100 outline-none transition-all duration-200 h-12',
+            Icon ? 'pl-12' : '',
+            hasError
+              ? 'border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+              : 'border-slate-700 hover:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20',
+            'placeholder:text-slate-500',
+            className,
+          ].join(' ')}
+          {...props}
+        />
+      </div>
 
       {hasError ? (
-        <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p id={errorId} role="alert" aria-live="assertive" className="mt-2 text-sm font-medium text-red-400">{error}</p>
       ) : hint ? (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
+        <p id={`${inputId}-hint`} className="mt-2 text-sm text-slate-500">{hint}</p>
       ) : null}
     </div>
   )

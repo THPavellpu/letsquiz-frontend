@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 
 function Card({
   className = '',
@@ -6,28 +7,35 @@ function Card({
   padding = 'md',
   bordered = false,
   shadow = true,
+  hover = false,
+  delay = 0,
   ...props
 }) {
   const paddingMap = {
     none: '',
-    sm: 'p-3',
-    md: 'p-4',
+    sm: 'p-4',
+    md: 'p-5',
     lg: 'p-6',
+    xl: 'p-8',
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay, ease: 'easeOut' }}
       className={[
-        'rounded-xl bg-white text-gray-900 dark:bg-slate-800 dark:text-slate-100',
+        'rounded-2xl bg-slate-800/50 text-slate-100 backdrop-blur-sm',
         paddingMap[padding] ?? paddingMap.md,
-        bordered ? 'border border-gray-200 dark:border-slate-700' : 'border border-transparent',
-        shadow ? 'shadow-sm' : 'shadow-none',
+        bordered ? 'border border-slate-700/50' : 'border border-transparent',
+        shadow ? 'shadow-lg shadow-black/5' : 'shadow-none',
+        hover ? 'transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 hover:border-slate-600/50' : '',
         className,
       ].join(' ')}
       {...props}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }
 

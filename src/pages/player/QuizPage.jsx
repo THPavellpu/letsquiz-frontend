@@ -44,6 +44,7 @@ function QuizPage() {
     const actionInFlightRef = useRef(false);
     const questionExpiryHandledRef = useRef(false);
     const quizFinishHandledRef = useRef(false);
+    const formRef = useRef(null);
 
     const questionId = currentQuestion?.id;
     const options = useMemo(() => currentQuestion?.options || [], [currentQuestion]);
@@ -301,25 +302,37 @@ function QuizPage() {
         }
     };
 
-    if (loading && !currentQuestion) return <h2>Loading...</h2>;
+    if (loading && !currentQuestion) return (
+        <div className="flex min-h-[60vh] items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500/30 border-t-indigo-400" />
+                <p className="text-sm text-slate-400">Loading question...</p>
+            </div>
+        </div>
+    );
 
     if (!currentQuestion) {
         return (
-            <div className="mx-auto max-w-2xl px-4 py-10">
-                <h1 className="text-2xl font-bold">Quiz</h1>
-                <h2 className="mt-2 text-lg">No more questions.</h2>
+            <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800">
+                    <svg className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h1 className="text-2xl font-bold text-white">Quiz Complete!</h1>
+                <p className="mt-2 text-sm text-slate-400">No more questions remaining.</p>
 
-                <div className="mt-6">
+                <div className="mt-8">
                     <button
                         onClick={handleFinish}
                         disabled={loading}
-                        className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                        className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-60"
                     >
                         Finish Quiz
                     </button>
                 </div>
 
-                {error && <h3 className="mt-4 text-sm text-red-600">{error}</h3>}
+                {error && <h3 className="mt-4 text-sm text-red-400">{error}</h3>}
             </div>
         );
     }
@@ -340,17 +353,18 @@ function QuizPage() {
     const { value: qValue, max: qMax } = progressForQuestion();
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 py-6">
-            <div className="rounded-2xl bg-white/90 p-4 shadow-sm ring-1 ring-black/5 md:p-6 dark:bg-gray-800/90 dark:ring-gray-700">
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 pb-28 sm:pb-6">
+            <div className="rounded-2xl bg-slate-800/50 border border-slate-700/50 p-4 shadow-lg shadow-black/5 md:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-lg font-bold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-900/30 dark:ring-blue-800 dark:text-blue-400">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-xl font-bold text-indigo-400 ring-1 ring-indigo-500/30">
                             {currentQuestion.order}
                         </div>
                         <div>
-<div className="text-sm text-slate-400">Question</div>
-                            <div className="text-xl font-bold leading-tight text-slate-100">
+                            <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Question</div>
+                            <div className="text-xl font-bold leading-tight text-white">
                                 {currentQuestion.order}
+                                <span className="ml-1 text-sm font-normal text-slate-500">/ {currentQuestion.total_questions}</span>
                             </div>
                         </div>
                     </div>
@@ -358,8 +372,8 @@ function QuizPage() {
                     <div className="sm:text-right">
                         {getWholeQuizTimerEnabled() && quizTimeRemaining != null && (
                             <div>
-<div className="text-sm text-slate-400">Quiz time</div>
-                                <div className="text-xl font-bold">
+                                <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Time Left</div>
+                                <div className="text-2xl font-extrabold text-indigo-400 tabular-nums">
                                     {minutes}:{String(seconds).padStart(2, "0")}
                                 </div>
                             </div>
@@ -381,8 +395,8 @@ function QuizPage() {
                 {getQuestionTimerEnabled() && (
                     <div className="mt-4">
                         <div className="flex items-center justify-between">
-<div className="text-sm text-slate-400">Time left</div>
-                            <div className="text-sm font-semibold tabular-nums">
+                            <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Question Time</div>
+                            <div className="text-sm font-semibold tabular-nums text-slate-300">
                                 {questionTimeRemaining}s
                             </div>
                         </div>
@@ -397,16 +411,18 @@ function QuizPage() {
                     </div>
                 )}
 
-                <div className="mt-5">
-<h2 className="text-base font-semibold text-slate-100 sm:text-lg">
+                <div className="mt-6">
+                    <h2 className="text-lg font-semibold text-white sm:text-xl leading-relaxed">
                         {currentQuestion.question_text}
                     </h2>
-                    <div className="mt-2 text-sm text-slate-300">
-                        Marks: {currentQuestion.marks}
+                    <div className="mt-2 flex items-center gap-2 text-sm text-slate-400">
+                        <span className="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-0.5 text-xs font-medium">
+                            {currentQuestion.marks} {currentQuestion.marks === 1 ? 'mark' : 'marks'}
+                        </span>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mt-5">
+                <form ref={formRef} onSubmit={handleSubmit} className="mt-5">
                     <div className="grid grid-cols-1 gap-3 sm:gap-4">
                         {options.map((opt, idx) => {
                             const optionId = opt.option_id ?? opt.id;
@@ -456,81 +472,121 @@ function QuizPage() {
                                     type="button"
                                     onClick={() => setSelectedOptionId(optionId)}
                                     disabled={answerDisabled}
+                                    aria-pressed={isSelected}
+                                    aria-disabled={answerDisabled}
                                     className={[
-                                        "w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 py-4 text-left font-semibold text-white",
+                                        "w-full rounded-2xl border border-slate-600/50 bg-slate-800/50 px-4 py-4 text-left font-semibold text-white",
                                         "shadow-sm transition-all duration-200",
-                                        "focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500/30",
-                                        "hover:border-blue-500 hover:bg-slate-750 hover:scale-105",
+                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500/30",
+                                        "hover:border-indigo-500/50 hover:bg-slate-700/50 hover:scale-[1.01]",
+                                        "min-h-[72px]",
                                         isSelected
-                                            ? "bg-blue-900/30 border-blue-500 ring-2 ring-blue-500"
+                                            ? "bg-indigo-500/20 border-indigo-500 ring-2 ring-indigo-500/30"
                                             : "",
                                         showReveal && optionIsCorrect
-                                            ? "bg-green-900/20 border-green-500"
+                                            ? "bg-emerald-500/20 border-emerald-500"
                                             : "",
                                         showReveal && optionIsWrong
-                                            ? "bg-red-900/20 border-red-500"
+                                            ? "bg-red-500/20 border-red-500"
                                             : "",
-                                        answerDisabled && !isSelected ? "opacity-80" : "",
+                                        answerDisabled && !isSelected ? "opacity-60" : "",
                                     ].join(" ")}
 
                                 >
-                                    <span className="block text-sm font-bold opacity-90">
-                                        Option {idx + 1}
-                                    </span>
-                                    <span className="mt-1 block text-base leading-snug sm:text-lg">
-                                        {optionText}
-                                    </span>
+                                    <div className="flex items-start gap-3">
+                                        <div className={[
+                                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold transition-colors",
+                                            isSelected
+                                                ? "bg-indigo-500 text-white"
+                                                : "bg-slate-700 text-slate-300",
+                                        ].join(" ")}>
+                                            {String.fromCharCode(65 + idx)}
+                                        </div>
+                                        <span className="flex-1 text-base leading-relaxed sm:text-lg">
+                                            {optionText}
+                                        </span>
+                                    </div>
                                 </button>
                             );
                         })}
                     </div>
 
-                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <button
-                            type="submit"
-                            disabled={answerDisabled || !selectedOptionId}
-                            className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:w-auto"
-                        >
-                            {loading ? "Submitting..." : "Submit"}
-                        </button>
-
-<button
                             type="button"
                             onClick={handleSkip}
                             disabled={answerDisabled}
-                            className="w-full rounded-xl border border-slate-600 bg-slate-800 px-5 py-2 font-semibold text-slate-100 transition-all duration-200 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-500 sm:w-auto"
+                            className="w-full rounded-xl border border-slate-600 bg-slate-800 px-5 py-3 font-semibold text-slate-100 transition-all duration-200 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-500 sm:w-auto"
                         >
                             Skip
+                        </button>
+
+                        <button
+                            type="submit"
+                            disabled={answerDisabled || !selectedOptionId}
+                            className="w-full rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-60 sm:w-auto"
+                        >
+                            {loading ? "Submitting..." : "Submit Answer"}
                         </button>
 
                     </div>
 
                     {error && (
-                        <div className="mt-4 text-sm text-red-600">{error}</div>
+                        <div className="mt-4 text-sm text-red-400">{error}</div>
                     )}
 
                     {lastAnswerSubmitted && (
-                        <div className="mt-4 text-sm text-gray-700">
-                            Last answer submitted successfully. Press Finish Quiz to complete the test.
+                        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+                            Answer submitted! You're on the last question. Click "Finish quiz" when ready.
                         </div>
                     )}
 
                     {hasAutoFinished && (
-                        <div className="mt-4 text-sm text-gray-500">
-                            Finishing quiz...
+                        <div className="mt-4 text-sm text-slate-400">
+                            Quiz finishing...
                         </div>
                     )}
 
                 </form>
 
-                    <div className="mt-5">
-                    <button
-                        onClick={handleFinish}
-                        disabled={loading || hasAutoFinished}
-                        className="w-full rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white transition hover:bg-purple-700 disabled:opacity-60"
-                    >
-                        Finish quiz
-                    </button>
+                    <div className="mt-6 pt-4 border-t border-slate-700/50">
+                        <button
+                            onClick={handleFinish}
+                            disabled={loading || hasAutoFinished}
+                            className="w-full rounded-xl bg-slate-700 px-4 py-3 font-semibold text-white transition hover:bg-slate-600 disabled:opacity-60"
+                        >
+                            Finish Quiz
+                        </button>
+                </div>
+            </div>
+            {/* Mobile fixed action bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+                <div className="backdrop-blur-md bg-slate-900/90 border-t border-slate-700/50 px-4 py-3">
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={handleSkip}
+                            disabled={answerDisabled}
+                            className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 font-semibold text-slate-100 transition hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-500"
+                        >
+                            Skip
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (formRef.current?.requestSubmit) {
+                                    formRef.current.requestSubmit();
+                                } else {
+                                    handleSubmit({ preventDefault: () => {} });
+                                }
+                            }}
+                            disabled={answerDisabled || !selectedOptionId}
+                            className="flex-1 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-60"
+                        >
+                            {loading ? "..." : "Submit"}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

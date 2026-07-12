@@ -2,28 +2,30 @@ import React from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-function PageContainer({ className = "", children, maxWidth = "7xl" }) {
+function PageContainer({
+  className = "",
+  children,
+  maxWidth = "7xl",
+  showNavbar = true,
+  showFooter = true,
+}) {
   return (
     <div
       className={[
-        "min-h-screen bg-gray-50 text-gray-900 transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100",
+        "min-h-screen bg-slate-950 text-slate-100 transition-colors duration-300",
         className,
       ].join(" ")}
     >
-      <Navbar />
+      {showNavbar && <Navbar />}
 
-      {/* Main content - full width */}
       <main className="min-w-0 flex-1">
         <div
-          className={`w-full px-4 py-6 sm:px-6 lg:px-8`}
-          style={{ maxWidth: maxWidth === "7xl" ? undefined : undefined }}
+          className="w-full px-5 py-6 sm:px-8 lg:px-10"
         >
-          {/* Page transitions */}
           <div className="animate-[fadeIn_180ms_ease-out]">{children}</div>
-
         </div>
 
-        <Footer />
+        {showFooter && <Footer />}
       </main>
     </div>
   );

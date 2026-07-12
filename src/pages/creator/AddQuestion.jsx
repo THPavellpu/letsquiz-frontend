@@ -143,6 +143,9 @@ function AddQuestion() {
   // Track whether the current question has been saved to prevent duplicate submissions
   const [isSaved, setIsSaved] = useState(false);
 
+  // Track whether at least one question has been saved - required to enable Finish button
+  const [hasSavedAtLeastOneQuestion, setHasSavedAtLeastOneQuestion] = useState(false);
+
   function validateOptions({ opts, correctIdx }) {
     const normalized = opts.map((o) => String(o ?? "").trim());
 
@@ -293,6 +296,7 @@ function AddQuestion() {
       } else {
         // Save Question: mark as saved to prevent duplicate submissions
         setIsSaved(true);
+        setHasSavedAtLeastOneQuestion(true);
         setMessage("Question created successfully.");
       }
     } catch (err) {
@@ -301,7 +305,12 @@ function AddQuestion() {
       if (errorData.order || errorData.non_field_errors?.some(e => e.toLowerCase().includes('duplicate'))) {
         setIsSaved(false);
       }
-      setError(JSON.stringify(errorData || err?.message || err));
+      // Display user-friendly error message
+      const errorMessage = errorData?.non_field_errors?.[0]
+        || errorData?.order?.[0]
+        || errorData?.detail
+        || "Failed to save question. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -320,6 +329,10 @@ function AddQuestion() {
   }
 
   const canSubmit = currentValidation.ok && !isInitLoading;
+
+  // Finish button should only be enabled after at least one question is saved
+  // and there's no pending save request in progress
+  const canFinish = hasSavedAtLeastOneQuestion && !isSubmitting;
 
   return (
     <div className="space-y-6">
@@ -478,7 +491,7 @@ function AddQuestion() {
                   type="button"
                   variant="outline"
                   size="lg"
-                  disabled={isSubmitting}
+                  disabled={!canFinish}
                   onClick={handleFinishQuizCreation}
                   className="w-full sm:w-auto"
                 >
