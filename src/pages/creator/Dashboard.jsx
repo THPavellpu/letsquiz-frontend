@@ -1,25 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  PlusCircle,
-  BarChart3,
-  Trophy,
-  Users,
-  FileQuestion,
-  Calendar,
-  ArrowRight
-} from "lucide-react";
 
 import { getCreatorDashboard } from "../../api/quizApi";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import EmptyState from "../../components/ui/EmptyState";
-import SectionHeader from "../../components/ui/SectionHeader";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { formatDateTime } from "../../utils/dateUtils";
 
 function Dashboard() {
+  // Keep old param destructuring so /dashboard/:quizId links don't crash.
   const { quizId } = useParams();
   const navigate = useNavigate();
 
@@ -38,6 +27,7 @@ function Dashboard() {
         const response = await getCreatorDashboard();
         const data = response?.data;
 
+        // Support a couple possible backend shapes without changing backend code.
         const list =
           Array.isArray(data)
             ? data
@@ -56,6 +46,7 @@ function Dashboard() {
       }
     }
 
+    // Always use creator endpoint for this page.
     fetchCreatorDashboard();
 
     return () => {
@@ -67,16 +58,9 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <SectionHeader
-          title="Creator Dashboard"
-          description="Manage your quizzes and view analytics"
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="h-64 animate-pulse" />
-          ))}
-        </div>
+      <div className="flex items-center gap-3 py-10">
+        <LoadingSpinner />
+        <h2 className="text-lg font-semibold">Loading...</h2>
       </div>
     );
   }
@@ -91,29 +75,46 @@ function Dashboard() {
 
   if (!hasQuizzes) {
     return (
-      <EmptyState
-        icon={LayoutDashboard}
-        title="No quizzes yet"
-        description="Create your first quiz to get started. You can create manual quizzes or use AI to generate questions automatically."
-        action={{
-          label: "Create Quiz",
-          onClick: () => navigate("/create-quiz"),
-        }}
-      />
+      <div className="space-y-6 py-10">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Creator Dashboard 📊</h1>
+          <p className="mt-2 text-sm text-slate-400">You haven't created any quizzes yet.</p>
+        </div>
+        <div>
+          <Button variant="primary" onClick={() => navigate("/create-quiz")}>
+            Create Quiz
+          </Button>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="Creator Dashboard"
-        description="Manage your quizzes and view analytics"
-        icon={LayoutDashboard}
-      />
+      <header className="space-y-2 animate-[fadeIn_220ms_ease-out]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              Creator Dashboard
+              <span className="ml-2" aria-hidden>
+                📊
+              </span>
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              Manage your quizzes and view analytics.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button variant="ghost" onClick={() => navigate("/profile")}>
+              Go Home
+            </Button>
+          </div>
+        </div>
+      </header>
 
-      <section>
+      <section className="animate-[fadeIn_260ms_ease-out]">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {quizzes.map((quiz, index) => {
+          {quizzes.map((quiz) => {
             const id = quiz.id ?? quiz.quiz_id ?? quiz.quizId;
             const title = quiz.quiz_title ?? quiz.title ?? quiz.name ?? "";
             const code = quiz.quiz_code ?? quiz.code ?? "";
@@ -130,98 +131,79 @@ function Dashboard() {
             const createdDate = quiz.created_date ?? quiz.createdDate ?? quiz.created_at ?? quiz.createdAt;
 
             return (
-              <motion.div
+              <Card
                 key={id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
+                bordered
+                className="p-5 h-full flex flex-col justify-between transition hover:-translate-y-0.5 hover:shadow-md"
+                padding="none"
               >
-                <Card
-                  bordered
-                  hover
-                  className="h-full flex flex-col justify-between"
-                  padding="lg"
-                >
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium text-slate-500">Quiz Title</div>
-                      <div className="text-base font-semibold text-white truncate">{title || "Untitled Quiz"}</div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium text-slate-500">Quiz Code</div>
-                      <div className="text-sm font-mono text-indigo-400">{code || "N/A"}</div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700/50">
-                          <FileQuestion className="h-4 w-4 text-slate-400" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Questions</div>
-                          <div className="text-sm font-semibold text-white">{questions ?? 0}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700/50">
-                          <Users className="h-4 w-4 text-slate-400" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Participants</div>
-                          <div className="text-sm font-semibold text-white">{participants ?? 0}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700/50">
-                          <Trophy className="h-4 w-4 text-amber-400" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Highest Score</div>
-                          <div className="text-sm font-semibold text-white">{highestScore ?? "N/A"}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700/50">
-                          <BarChart3 className="h-4 w-4 text-emerald-400" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Average Score</div>
-                          <div className="text-sm font-semibold text-white">{averageScore ?? "N/A"}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <Calendar className="h-3 w-3" />
-                      {createdDate ? (
-                        <>
-                          {formatDateTime(createdDate).date}
-                          <span className="text-slate-600">{formatDateTime(createdDate).time}</span>
-                        </>
-                      ) : "N/A"}
-                    </div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <div className="text-sm text-slate-400">Quiz Title</div>
+                    <div className="text-lg font-semibold text-white">{title || "N/A"}</div>
                   </div>
 
-                  <div className="mt-5 grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="primary" onClick={() => navigate(`/add-question/${id}`)}>
-                      <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
-                      Questions
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => navigate(`/quiz-summary/${id}`)}>
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/analytics/${id}`)}>
-                      <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
-                      Analytics
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/leaderboard/${id}`)}>
-                      <Trophy className="h-3.5 w-3.5 mr-1.5" />
-                      Leaderboard
-                    </Button>
+                  <div className="space-y-1">
+                    <div className="text-sm text-slate-400">Quiz Code</div>
+                    <div className="text-sm font-mono text-white">{code || "N/A"}</div>
                   </div>
-                </Card>
-              </motion.div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-slate-400">Questions</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{questions ?? "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Participants</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{participants ?? "N/A"}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400">Completed Participants</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{completedParticipants ?? "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Highest Score</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{highestScore ?? "N/A"}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400">Average Score</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{averageScore ?? "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Created Date</div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        {createdDate ? (
+                            <>
+                                {formatDateTime(createdDate).date}
+                                <br />
+                                <span className="text-slate-400">{formatDateTime(createdDate).time}</span>
+                            </>
+                        ) : "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate(`/quiz-summary/${id}`)}>
+                    View Dashboard
+                  </Button>
+
+                  <Button size="lg" variant="outline" className="w-full" onClick={() => navigate(`/analytics/${id}`)}>
+                    Analytics
+                  </Button>
+
+                  <Button size="lg" variant="outline" className="w-full" onClick={() => navigate(`/leaderboard/${id}`)}>
+                    Leaderboard
+                  </Button>
+
+                  <Button size="lg" variant="primary" className="w-full" onClick={() => navigate(`/add-question/${id}`)}>
+                    Add More Questions
+                  </Button>
+                </div>
+              </Card>
             );
           })}
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Trash2, Check, Plus, RotateCcw, Sparkles, FileText, CheckCircle } from "lucide-react";
+
+import { Eye, EyeOff, Trash2, Check, Plus, RotateCcw } from "lucide-react";
 
 import { createQuestionWithOptions, createQuiz, generateAiQuiz } from "../../api/quizApi";
 import Badge from "../../components/ui/Badge";
@@ -17,47 +17,47 @@ import { validateAiQuestion } from "./questionValidation";
 function StepIndicator({ steps, activeIndex }) {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between gap-2">
+      <ol className="grid grid-cols-3 gap-3">
         {steps.map((s, idx) => {
           const isDone = idx < activeIndex;
           const isActive = idx === activeIndex;
 
           return (
-            <div key={s.key} className="flex items-center gap-2 flex-1">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+            <li key={s.key} className="flex items-center gap-3">
+              <div
                 className={[
-                  "flex h-8 w-8 items-center justify-center rounded-xl text-xs font-semibold shrink-0",
+                  "flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold",
                   isDone
-                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
                     : isActive
-                      ? "bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/30"
-                      : "bg-slate-800 text-slate-500 ring-1 ring-slate-700",
+                      ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
+                      : "bg-gray-100 text-gray-500 ring-1 ring-gray-200",
                 ].join(" ")}
               >
-                {isDone ? <CheckCircle className="h-4 w-4" /> : idx + 1}
-              </motion.div>
-              <div className="hidden sm:block min-w-0">
+                {isDone ? <span aria-hidden="true">✓</span> : <span aria-hidden="true">{idx + 1}</span>}
+              </div>
+
+              <div className="min-w-0">
                 <div
                   className={[
-                    "truncate text-xs font-medium",
+                    "truncate text-sm",
                     isDone
-                      ? "text-emerald-400"
+                      ? "text-emerald-700"
                       : isActive
-                        ? "text-indigo-400"
-                        : "text-slate-500",
+                        ? "text-blue-700"
+                        : "text-gray-500",
                   ].join(" ")}
                 >
                   {s.label}
                 </div>
               </div>
-              {idx < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-1 ${isDone ? 'bg-emerald-500/30' : 'bg-slate-700'}`} />
-              )}
-            </div>
+            </li>
           );
         })}
+      </ol>
+
+      <div className="mt-3 hidden sm:block">
+        <div className="h-px w-full bg-gray-200" />
       </div>
     </div>
   );
@@ -929,11 +929,10 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
         >
         <div className="flex items-start justify-between gap-4">
           <div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-                    <FileText className="h-5 w-5" />
-                  </div>
-
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                ✍️
+              </div>
               <div>
                 <div className="text-base font-semibold text-gray-900 dark:text-gray-100">Manual Quiz</div>
                 <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Create questions manually.</div>
@@ -973,9 +972,8 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
             <div>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
-                  <Sparkles className="h-5 w-5" />
+                  ✨
                 </div>
-
                 <div>
                   <div className="text-base font-semibold text-gray-900 dark:text-gray-100">AI Generate Quiz</div>
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Generate questions automatically using Gemini AI.</div>
@@ -1225,9 +1223,8 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    AI Generator <Sparkles className="ml-2 h-4 w-4 inline" />
+                    AI Generator <span aria-hidden="true" className="ml-1">✨</span>
                   </div>
-
                   <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">Generate questions automatically with Gemini.</div>
                 </div>
                 <Badge variant="success">AI</Badge>
@@ -1275,10 +1272,8 @@ function normalizeAiQuestion(q, fallbackDifficulty) {
                   onClick={handleAiGenerate}
                   className="w-full sm:w-auto"
                 >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generate with AI
+                  ✨ Generate with AI
                 </Button>
-
 
                 <div className="min-h-[32px] text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
                   {isGenerating ? (

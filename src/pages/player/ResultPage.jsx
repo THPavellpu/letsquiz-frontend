@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   PieChart,
   Pie,
@@ -13,7 +12,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { CheckCircle, XCircle, Clock, Target, TrendingUp, Award, Home, RotateCcw, BarChart3 } from "lucide-react";
 
 import { getAttemptResult } from "../../api/quizApi";
 
@@ -22,7 +20,6 @@ import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import StatCard from "../../components/ui/StatCard";
-import SectionHeader from "../../components/ui/SectionHeader";
 import { formatDateTime } from "../../utils/dateUtils";
 
 
@@ -343,111 +340,148 @@ function ResultPage() {
         ) : (
           <>
 
-            {/* SECTION 1 - Score Overview */}
-            <Card className="p-6" bordered shadow>
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-4">
+            {/* SECTION 1 */}
+            <Card className="p-6" bordered shadow={false}>
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20">
-                      <Award className="h-6 w-6 text-emerald-400" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold tracking-tight text-white">Quiz Complete!</h1>
-                      <p className="text-sm text-slate-400">Here is how you performed</p>
-                    </div>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">🎉 Quiz Finished</h1>
                     {percentage != null ? (
                       <ScoreToneBadge percentage={percentage} />
                     ) : null}
                   </div>
 
                   <div className="space-y-2">
-                    <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Quiz Title</div>
-                    <div className="text-xl font-semibold text-white">
-                      {result?.quiz_title}
+                    <div className="text-sm text-slate-400">Quiz Title</div>
+                      <div className="text-xl font-semibold text-white">
+                        {result?.quiz_title}
+                      </div>
+
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Score obtained</div>
+                      <div className="mt-1 text-lg font-semibold text-white">
+                        {score}
+                      </div>
+
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Percentage</div>
+                      <div className="mt-1 text-lg font-semibold text-white">
+                        {percentage != null ? `${percentage}%` : ""}
+                      </div>
+
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Total Questions</div>
+                      <div className="mt-1 text-lg font-semibold text-white">
+                        {totalQuestions}
+
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Correct Answers</div>
+                      <div className="mt-1 text-lg font-semibold text-emerald-300">
+                        {correctCount}
+                      </div>
+
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Wrong Answers</div>
+                      <div className="mt-1 text-lg font-semibold text-red-300">
+                        {wrongCount}
+                      </div>
+
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Time Taken</div>
+                      <div className="mt-1 text-lg font-semibold text-white">{timeBadge}</div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Score</div>
-                      <div className="mt-1 text-lg font-bold text-white">{score}</div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Started At</div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        {startedAt ? (
+                          <>
+                            <div>{formatDateOnly(startedAt)}</div>
+                            <div className="text-slate-300">{formatTimeOnly(startedAt)}</div>
+                          </>
+                        ) : (
+                          "N/A"
+                        )}
+                      </div>
                     </div>
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Percentage</div>
-                      <div className="mt-1 text-lg font-bold text-white">{percentage != null ? `${percentage}%` : ""}</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Questions</div>
-                      <div className="mt-1 text-lg font-bold text-white">{totalQuestions}</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Correct</div>
-                      <div className="mt-1 text-lg font-bold text-emerald-400">{correctCount}</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Incorrect</div>
-                      <div className="mt-1 text-lg font-bold text-red-400">{wrongCount}</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-800/50 p-3">
-                      <div className="text-xs text-slate-500">Time</div>
-                      <div className="mt-1 text-lg font-bold text-white">{timeBadge}</div>
+                    <div className="rounded-lg bg-white/5 p-3">
+                      <div className="text-xs text-slate-400">Finished At</div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        {finishedAt ? (
+                          <>
+                            <div>{formatDateOnly(finishedAt)}</div>
+                            <div className="text-slate-300">{formatTimeOnly(finishedAt)}</div>
+                          </>
+                        ) : (
+                          "N/A"
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center lg:justify-end">
+                <div className="flex items-center justify-center md:justify-end">
                   <CircularProgress percentage={percentage} tone={scoreTone} />
                 </div>
               </div>
             </Card>
 
-            {/* SECTION 2 - Stats Grid */}
+            {/* SECTION 2 */}
             <section>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                  title="Correct"
+                  title="✓ Correct Answers"
                   value={correctCount ?? "N/A"}
                   subtitle="Total correct"
-                  icon={CheckCircle}
-                  iconColor="emerald"
+                  className="bg-white/5 border border-white/10"
                 />
                 <StatCard
-                  title="Incorrect"
+                  title="✗ Incorrect Answers"
                   value={wrongCount}
-                  subtitle="Total wrong"
-                  icon={XCircle}
-                  iconColor="rose"
+                  subtitle="Total incorrect"
+                  className="bg-white/5 border border-white/10"
                 />
+
                 <StatCard
-                  title="Accuracy"
+                  title="📈 Accuracy"
                   value={percentage != null ? `${percentage}%` : "N/A"}
-                  subtitle="Your score"
-                  icon={Target}
-                  iconColor="indigo"
+                  subtitle="Based on score"
+                  className="bg-white/5 border border-white/10"
                 />
                 <StatCard
-                  title="Duration"
+                  title="⏱ Time Taken"
                   value={timeBadge}
-                  subtitle="Time taken"
-                  icon={Clock}
-                  iconColor="amber"
+                  subtitle="Duration"
+                  className="bg-white/5 border border-white/10"
                 />
               </div>
             </section>
 
-            {/* SECTION 3 - Question Review */}
+            {/* SECTION 3 */}
             <section className="space-y-4">
-              <SectionHeader
-                title="Question Review"
-                description="Expand each question to see your answers and marks earned"
-                icon={BarChart3}
-              />
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white">Question Review</h2>
+                  <p className="mt-1 text-sm text-slate-400">Expand each question to see your answers and marks.</p>
+                </div>
+              </div>
 
               <div className="space-y-3">
                 {questionReview.length === 0 ? (
-                  <Card className="p-6 text-center">
-                    <p className="text-slate-400">No question review data available.</p>
-                  </Card>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-slate-300">
+                    No question review data available.
+                  </div>
                 ) : (
                   questionReview.map((q, idx) => {
                     const isCorrectRaw = q?.is_correct ?? q?.correct ?? q?.user_answer_correct;
@@ -478,6 +512,9 @@ function ResultPage() {
                     const maxMarks = q?.max_marks ?? q?.total_marks ?? q?.marks_possible ?? 1;
                     const marksEarned = q?.is_correct ? Number(q?.marks ?? q?.max_marks ?? q?.marks_earned ?? 0) : 0;
 
+                    const earnedNum = Number.isFinite(marksEarned) ? marksEarned : 0;
+
+
                     const badgeVariant = isCorrect == null ? "neutral" : isCorrect ? "success" : "danger";
 
                     const resolvedOptions = optionList ? optionList : [];
@@ -487,116 +524,140 @@ function ResultPage() {
                     return (
                       <Card
                         key={idx}
-                        className="overflow-hidden"
-                        padding="none"
+                        className="p-4 bg-white/5 border border-white/10"
+                        shadow={false}
                       >
                         <button
-                          className="w-full p-4 text-left"
+                          className="w-full text-left"
                           onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-3">
-                              <div className={[
-                                "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold",
-                                isCorrect ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                              ].join(" ")}>
-                                {idx + 1}
-                              </div>
-                              <div className="text-sm font-medium text-white truncate max-w-[200px] sm:max-w-none">
-                                {questionText ?? "Untitled Question"}
-                              </div>
+                              <div className="text-white font-semibold">Question {idx + 1}</div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              <Badge variant={badgeVariant} size="sm">
-                                {isCorrect == null ? "" : isCorrect ? "Correct" : "Wrong"}
+                                    <div className="flex items-center gap-2">
+                              <Badge variant={badgeVariant}>
+                                {isCorrect == null ? "" : isCorrect ? "✓ Correct" : "✗ Incorrect"}
                               </Badge>
-                              <span className="text-xs text-slate-500">{openIndex === idx ? "▲" : "▼"}</span>
+                              <div className="text-slate-300 text-sm">
+                                {openIndex === idx ? "Hide" : "View"}
+                              </div>
                             </div>
                           </div>
                         </button>
 
-                        {openIndex === idx && (
-                          <div className="border-t border-slate-700/50 p-4 space-y-4">
-                            <div className="rounded-xl bg-slate-800/50 p-4">
-                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Question</div>
-                              <div className="text-sm text-white">{questionText ?? "N/A"}</div>
+                        {openIndex === idx ? (
+                          <div className="mt-4 space-y-4">
+                            <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4">
+                              <div className="text-sm font-medium text-slate-300">Question text</div>
+                              <div className="mt-1 text-white font-semibold">{questionText ?? "N/A"}</div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              <div className="rounded-xl bg-slate-800/50 p-3">
-                                <div className="text-xs text-slate-500 mb-1">Your Answer</div>
-                                <div className="text-sm text-white">{userAnswerText ?? "No answer"}</div>
+                              <div>
+                                <div className="text-sm font-medium text-slate-300">Your answer</div>
+                                <div className="mt-1 text-white">
+                                  {userAnswerText != null ? userAnswerText : ""}
+                                </div>
                               </div>
-                              <div className="rounded-xl bg-emerald-500/10 p-3">
-                                <div className="text-xs text-emerald-500 mb-1">Correct Answer</div>
-                                <div className="text-sm text-emerald-400">{correctAnswerText ?? "N/A"}</div>
+                              <div>
+                                <div className="text-sm font-medium text-slate-300">Correct answer</div>
+                                <div className="mt-1 text-emerald-300">
+                                  {correctAnswerText != null ? correctAnswerText : ""}
+                                </div>
                               </div>
                             </div>
 
                             <div className="space-y-2">
-                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">All Options</div>
+                              <div className="text-sm font-medium text-slate-300">Options</div>
                               <div className="grid grid-cols-1 gap-2">
                                 {resolvedOptions.map((opt, optIdx) => {
                                   const label = optionLabels[optIdx];
-                                  const optText = opt?.option_text ?? opt?.text ?? opt?.option ?? opt?.value;
+                                  // Expected backend: { id, option_text, is_correct }
+                                  // Fallback for older quiz payloads.
+                                  const optText =
+                                    opt?.option_text ??
+                                    opt?.text ??
+                                    opt?.option ??
+                                    opt?.value;
 
-                                  const isCorrectOption = opt?.id != null && correctOption?.id != null
-                                    ? opt.id === correctOption.id
-                                    : correctAnswerText != null
-                                      ? String(correctAnswerText) === String(optText)
-                                      : false;
 
-                                  const isUserSelected = opt?.id != null && selectedOption?.id != null
-                                    ? opt.id === selectedOption.id
-                                    : selectedOption?.option_text != null
-                                      ? String(selectedOption.option_text) === String(optText)
-                                      : false;
+
+                                  const isCorrectOption =
+                                    opt?.id != null && correctOption?.id != null
+                                      ? opt.id === correctOption.id
+                                      : correctAnswerText != null
+                                        ? String(correctAnswerText) === String(optText) || String(correctAnswerText) === label
+                                        : false;
+
+                                  const isUserSelected =
+                                    opt?.id != null && selectedOption?.id != null
+                                      ? opt.id === selectedOption.id
+                                      : selectedOption?.option_text != null
+                                        ? String(selectedOption.option_text) === String(optText) || String(selectedOption.option_text) === label
+                                        : false;
+
+                                  const isWrongSelected = isUserSelected && !isCorrectOption;
+
+                                  let border = "border-white/10";
+                                  let bg = "bg-transparent";
+                                  let text = "text-slate-100";
+
+                                  if (isCorrectOption) {
+                                    border = "border-emerald-400/70";
+                                    bg = "bg-transparent";
+                                    text = "text-slate-100";
+                                  } else if (isWrongSelected) {
+                                    border = "border-red-400/70";
+                                    bg = "bg-transparent";
+                                    text = "text-slate-100";
+                                  }
+
+                                  const badge = isCorrectOption
+                                    ? { text: "Correct", variant: "success" }
+                                    : isWrongSelected
+                                      ? { text: "Your answer", variant: "danger" }
+                                      : null;
 
                                   return (
                                     <div
                                       key={label}
-                                      className={[
-                                        "flex items-center gap-3 rounded-lg border px-3 py-2",
-                                        isCorrectOption
-                                          ? "border-emerald-500/50 bg-emerald-500/10"
-                                          : isUserSelected
-                                            ? "border-red-500/50 bg-red-500/10"
-                                            : "border-slate-700 bg-slate-800/30"
-                                      ].join(" ")}
+                                      className={`flex items-start justify-between gap-4 rounded-lg border ${border} ${bg} px-3 py-2 ${text}`}
                                     >
-                                      <div className={[
-                                        "flex h-6 w-6 items-center justify-center rounded text-xs font-bold",
-                                        isCorrectOption
-                                          ? "bg-emerald-500 text-white"
-                                          : isUserSelected
-                                            ? "bg-red-500 text-white"
-                                            : "bg-slate-700 text-slate-300"
-                                      ].join(" ")}>
-                                        {label}
+                                      <div className="space-y-1">
+                                        <div className="text-xs font-semibold text-slate-300">Option {label}</div>
+                                        <div className="text-sm font-medium">
+                                          {optText ?? "N/A"}
+                                        </div>
                                       </div>
-                                      <span className="text-sm text-slate-200 flex-1">{optText ?? "N/A"}</span>
-                                      {isCorrectOption && <Badge variant="success" size="sm">Correct</Badge>}
-                                      {isUserSelected && !isCorrectOption && <Badge variant="danger" size="sm">Your Answer</Badge>}
+
+                                      {badge ? (
+                                        <Badge variant={badge.variant} className="shrink-0">
+                                          {badge.text}
+                                        </Badge>
+                                      ) : null}
                                     </div>
                                   );
                                 })}
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                               <div>
-                                <div className="text-xs text-slate-500">Marks Earned</div>
-                                <div className="text-xl font-bold text-white">
+                                <div className="text-sm font-medium text-slate-300">Marks earned</div>
+                                <div className="mt-1 text-xl font-bold text-white">
                                   {`${marksEarned ?? 0} / ${maxMarks ?? 1}`}
                                 </div>
                               </div>
-                              <Badge variant={isCorrect ? "success" : "danger"} size="lg">
-                                {isCorrect ? "✓ Correct" : "✗ Incorrect"}
-                              </Badge>
+                              <div className="flex gap-2">
+                                <Badge variant={isCorrect ? "success" : "danger"}>
+                                  {isCorrect ? "✓ Correct" : "✗ Incorrect"}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                        )}
+                        ) : null}
                       </Card>
                     );
                   })
@@ -604,72 +665,61 @@ function ResultPage() {
               </div>
             </section>
 
-            {/* SECTION 4 - Table */}
+            {/* SECTION 4 */}
             <section>
-              <SectionHeader
-                title="Question Summary"
-                description="Quick overview of your answers"
-                icon={TrendingUp}
-              />
+              <h2 className="text-lg font-bold text-white">Score per Question</h2>
+              <p className="mt-1 text-sm text-slate-400">Marks earned for each question.</p>
 
-              <Card padding="none" className="mt-4 overflow-hidden">
+              <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/5">
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-left">
-                    <thead className="bg-slate-800/50">
-                      <tr className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <thead className="bg-slate-900/40">
+                      <tr className="text-sm text-slate-300">
                         <th className="px-4 py-3">Question</th>
                         <th className="px-4 py-3">Result</th>
                         <th className="px-4 py-3">Marks</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-700/50">
+                    <tbody>
                       {tableRows.length === 0 ? (
                         <tr>
-                          <td colSpan={3} className="px-4 py-6 text-center text-slate-400">
+                          <td colSpan={3} className="px-4 py-6 text-slate-400">
                             No table data available.
                           </td>
                         </tr>
                       ) : (
                         tableRows.map((row, i) => (
-                          <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                          <tr key={i} className="border-t border-white/10">
                             <td className="px-4 py-3 text-white font-medium">{row.label}</td>
                             <td className="px-4 py-3">
                               {row.result === "✓" ? (
-                                <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                                  <CheckCircle className="h-4 w-4" /> Correct
-                                </span>
+                                <span className="text-emerald-300 font-semibold">✓</span>
                               ) : row.result === "✗" ? (
-                                <span className="inline-flex items-center gap-1 text-red-400 font-semibold">
-                                  <XCircle className="h-4 w-4" /> Incorrect
-                                </span>
+                                <span className="text-red-300 font-semibold">✗</span>
                               ) : (
                                 <span className="text-slate-400">{row.result}</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-slate-300">{row.marks}</td>
+                            <td className="px-4 py-3 text-slate-200">{row.marks}</td>
                           </tr>
                         ))
                       )}
                     </tbody>
                   </table>
                 </div>
-              </Card>
+              </div>
             </section>
 
-            {/* SECTION 5 - Charts */}
+            {/* SECTION 5 */}
             <section>
-              <SectionHeader
-                title="Performance Charts"
-                description="Visual breakdown of your quiz performance"
-              />
-
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mt-4">
-                <Card padding="md" bordered>
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-white">Correct vs Incorrect</h3>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <Card className="p-4 bg-white/5 border border-white/10" shadow={false}>
+                  <div className="mb-2">
+                    <h2 className="text-lg font-bold text-white">Charts</h2>
+                    <p className="mt-1 text-sm text-slate-400">Correct vs Incorrect</p>
                   </div>
 
-                  <div className="h-56">
+                  <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -678,67 +728,33 @@ function ResultPage() {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={70}
-                          innerRadius={40}
-                          paddingAngle={4}
-                          dataKey="value"
+                          outerRadius={80}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {pieData.map((entry, idx) => (
                             <Cell key={`cell-${idx}`} fill={entry.fill} />
                           ))}
                         </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
-                            borderRadius: '8px'
-                          }}
-                        />
+                        <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
-                  </div>
-                  <div className="flex justify-center gap-4 mt-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                      <span className="text-xs text-slate-400">Correct</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                      <span className="text-xs text-slate-400">Incorrect</span>
-                    </div>
                   </div>
                 </Card>
 
                 <div className="lg:col-span-2">
-                  <Card padding="md" bordered>
-                    <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-white">Score per Question</h3>
-                      <p className="text-xs text-slate-500">Marks earned for each question</p>
+                  <Card className="p-4 bg-white/5 border border-white/10" shadow={false}>
+                    <div className="mb-2">
+                      <p className="text-sm font-semibold text-slate-300">Score per question</p>
+                      <p className="mt-1 text-sm text-slate-400">X-axis: Q1, Q2, Q3...</p>
                     </div>
-                    <div className="h-56">
+                    <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={barData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                          <XAxis
-                            dataKey="label"
-                            stroke="#64748b"
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
-                            axisLine={{ stroke: '#334155' }}
-                          />
-                          <YAxis
-                            stroke="#64748b"
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
-                            axisLine={{ stroke: '#334155' }}
-                            allowDecimals={false}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#1e293b',
-                              border: '1px solid #334155',
-                              borderRadius: '8px'
-                            }}
-                          />
-                          <Bar dataKey="score" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                          <XAxis dataKey="label" stroke="rgba(226,232,240,0.8)" />
+                          <YAxis stroke="rgba(226,232,240,0.8)" allowDecimals={false} />
+                          <Tooltip />
+                          <Bar dataKey="score" fill="#60a5fa" radius={[8, 8, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -747,15 +763,14 @@ function ResultPage() {
               </div>
             </section>
 
-            {/* SECTION 6 - Action Buttons */}
-            <section className="flex flex-col gap-3 sm:flex-row">
+            {/* SECTION 6 */}
+            <section className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-between">
               <Button
                 size="lg"
-                variant="primary"
+                variant="secondary"
                 className="flex-1"
                 onClick={() => navigate("/join-quiz")}
                 disabled={loading}
-                icon={RotateCcw}
               >
                 Retake Quiz
               </Button>
@@ -766,20 +781,8 @@ function ResultPage() {
                 className="flex-1"
                 onClick={() => navigate("/leaderboard")}
                 disabled={loading}
-                icon={BarChart3}
               >
-                Leaderboard
-              </Button>
-
-              <Button
-                size="lg"
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate("/my-performance")}
-                disabled={loading}
-                icon={TrendingUp}
-              >
-                My Performance
+                View Leaderboard
               </Button>
 
               <Button
@@ -788,9 +791,18 @@ function ResultPage() {
                 className="flex-1"
                 onClick={() => navigate("/profile")}
                 disabled={loading}
-                icon={Home}
               >
-                Home
+                Go Home
+              </Button>
+
+              <Button
+                size="lg"
+                variant="ghost"
+                className="flex-1"
+                onClick={() => navigate("/my-performance")}
+                disabled={loading}
+              >
+                My Performance
               </Button>
             </section>
           </>

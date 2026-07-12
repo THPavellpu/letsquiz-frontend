@@ -144,11 +144,9 @@ function ResetPassword() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    aria-pressed={showPassword}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-2 text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
                   >
-                    <span className="text-sm font-medium">{showPassword ? "Hide" : "Show"}</span>
+                    {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
 
@@ -166,11 +164,9 @@ function ResetPassword() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((s) => !s)}
-                    aria-pressed={showConfirmPassword}
-                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-2 text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:text-blue-400 dark:hover:bg-blue-900/30"
                   >
-                    <span className="text-sm font-medium">{showConfirmPassword ? "Hide" : "Show"}</span>
+                    {showConfirmPassword ? "Hide" : "Show"}
                   </button>
                 </div>
 
@@ -179,8 +175,6 @@ function ResetPassword() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
-                    role="alert"
-                    aria-live="assertive"
                   >
                     {error}
                   </motion.div>
@@ -191,8 +185,6 @@ function ResetPassword() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    role="status"
-                    aria-live="polite"
                   >
                     {message}
                   </motion.div>

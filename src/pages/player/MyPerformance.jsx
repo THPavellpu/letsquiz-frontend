@@ -1,23 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  BarChart3,
-  LogIn,
-  Trophy,
-  CheckCircle,
-  XCircle,
-  Clock,
-  ArrowRight,
-  Award
-} from "lucide-react";
 
 import { getMyPerformance } from "../../api/quizApi";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import Badge from "../../components/ui/Badge";
-import EmptyState from "../../components/ui/EmptyState";
-import SectionHeader from "../../components/ui/SectionHeader";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { formatDateTime } from "../../utils/dateUtils";
 
 function MyPerformance() {
@@ -38,6 +25,7 @@ function MyPerformance() {
         const response = await getMyPerformance();
         const data = response?.data;
 
+        // Support multiple possible backend response shapes.
         const list =
           Array.isArray(data)
             ? data
@@ -65,6 +53,7 @@ function MyPerformance() {
 
   const hasAttempts = useMemo(() => Array.isArray(attempts) && attempts.length > 0, [attempts]);
 
+  // Helper to format date using the shared utility
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const { date, time } = formatDateTime(dateString);
@@ -74,16 +63,9 @@ function MyPerformance() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <SectionHeader
-          title="My Performance"
-          description="View all your quiz attempts and scores"
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="h-56 animate-pulse" />
-          ))}
-        </div>
+      <div className="flex items-center gap-3 py-10">
+        <LoadingSpinner />
+        <h2 className="text-lg font-semibold">Loading...</h2>
       </div>
     );
   }
@@ -98,29 +80,46 @@ function MyPerformance() {
 
   if (!hasAttempts) {
     return (
-      <EmptyState
-        icon={BarChart3}
-        title="No quiz attempts yet"
-        description="Join a quiz to see your performance history and results."
-        action={{
-          label: "Join Quiz",
-          onClick: () => navigate("/join-quiz"),
-        }}
-      />
+      <div className="space-y-6 py-10">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">My Performance 📈</h1>
+          <p className="mt-2 text-sm text-slate-400">You haven't attempted any quizzes yet.</p>
+        </div>
+        <div>
+          <Button variant="primary" onClick={() => navigate("/join-quiz")}>
+            Join Quiz
+          </Button>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="My Performance"
-        description="View all your quiz attempts and scores"
-        icon={BarChart3}
-      />
+      <header className="space-y-2 animate-[fadeIn_220ms_ease-out]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              My Performance
+              <span className="ml-2" aria-hidden>
+                📈
+              </span>
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              View all your quiz attempts and scores.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button variant="ghost" onClick={() => navigate("/profile")}>
+              Go Home
+            </Button>
+          </div>
+        </div>
+      </header>
 
-      <section>
+      <section className="animate-[fadeIn_260ms_ease-out]">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {attempts.map((attempt, index) => {
+          {attempts.map((attempt) => {
             const id = attempt.id ?? attempt.attempt_id ?? attempt.attemptId;
             const title = attempt.quiz_title ?? attempt.title ?? attempt.name ?? "Unknown Quiz";
             const score = attempt.score ?? attempt.total_score;
@@ -129,91 +128,64 @@ function MyPerformance() {
             const startedAt = attempt.started_at ?? attempt.startedAt ?? attempt.created_at;
             const finishedAt = attempt.finished_at ?? attempt.finishedAt ?? attempt.completed_at;
 
-            const isCompleted = completed === true || completed === "true";
-            const passThreshold = 50;
-            const isPassed = percentage !== undefined && percentage >= passThreshold;
-
             return (
-              <motion.div
+              <Card
                 key={id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
+                bordered
+                className="p-5 h-full flex flex-col justify-between transition hover:-translate-y-0.5 hover:shadow-md"
+                padding="none"
               >
-                <Card
-                  bordered
-                  hover
-                  className="h-full flex flex-col justify-between"
-                  padding="lg"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-slate-500">Quiz</div>
-                        <div className="text-base font-semibold text-white truncate mt-0.5">
-                          {title}
-                        </div>
-                      </div>
-                      <Badge
-                        variant={isCompleted ? (isPassed ? "success" : "danger") : "warning"}
-                        size="sm"
-                      >
-                        {isCompleted ? (isPassed ? "Passed" : "Failed") : "In Progress"}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/20">
-                          <Award className="h-4 w-4 text-indigo-400" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Score</div>
-                          <div className="text-sm font-semibold text-white">{score ?? "N/A"}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                          isCompleted ? (isPassed ? 'bg-emerald-500/20' : 'bg-red-500/20') : 'bg-amber-500/20'
-                        }`}>
-                          {isCompleted ? (
-                            isPassed ? <Trophy className="h-4 w-4 text-emerald-400" /> : <XCircle className="h-4 w-4 text-red-400" />
-                          ) : (
-                            <Clock className="h-4 w-4 text-amber-400" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500">Percentage</div>
-                          <div className="text-sm font-semibold text-white">
-                            {percentage !== undefined ? `${percentage}%` : "N/A"}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <Clock className="h-3 w-3" />
-                      {formatDate(finishedAt || startedAt)}
-                    </div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <div className="text-sm text-slate-400">Quiz Title</div>
+                    <div className="text-lg font-semibold text-white">{title}</div>
                   </div>
 
-                  <div className="mt-4">
-                    <Button
-                      size="sm"
-                      variant={isCompleted ? "secondary" : "outline"}
-                      className="w-full"
-                      disabled={!id || !isCompleted}
-                      onClick={() => {
-                        if (!id) return;
-                        navigate(`/results/${id}`);
-                      }}
-                    >
-                      View Result
-                      <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-                    </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-slate-400">Score</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{score ?? "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Percentage</div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        {percentage !== undefined ? `${percentage}%` : "N/A"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400">Completed</div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        {completed === true || completed === "true" ? "Yes" : "No"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Started At</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{formatDate(startedAt)}</div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-slate-400">Finished At</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{formatDate(finishedAt)}</div>
+                    </div>
                   </div>
-                </Card>
-              </motion.div>
+                </div>
+
+                <div className="mt-4">
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="w-full"
+                    disabled={!id}
+                    onClick={() => {
+                      if (!id) return;
+                      navigate(`/results/${id}`);
+                    }}
+                  >
+                    View Result
+                  </Button>
+                </div>
+              </Card>
             );
           })}
         </div>

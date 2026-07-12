@@ -117,8 +117,6 @@ function ForgotPassword() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
-                    role="alert"
-                    aria-live="assertive"
                   >
                     {error}
                   </motion.div>
@@ -129,8 +127,6 @@ function ForgotPassword() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    role="status"
-                    aria-live="polite"
                   >
                     {message}
                   </motion.div>

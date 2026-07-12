@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { LogIn, AlertCircle, Key } from "lucide-react";
 
 import { joinQuiz } from "../../api/quizApi";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
-import SectionHeader from "../../components/ui/SectionHeader";
 
 function JoinQuiz() {
     const [quizCode, setQuizCode] = useState("");
@@ -19,14 +16,14 @@ function JoinQuiz() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        if (isSubmitting || !quizCode.trim()) return;
+        if (isSubmitting) return;
 
         setError("");
         setIsSubmitting(true);
 
         try {
             const response = await joinQuiz({
-                quiz_code: quizCode.trim(),
+                quiz_code: quizCode,
             });
 
             navigate(`/quiz/${response.data.attempt_id}`);
@@ -37,6 +34,7 @@ function JoinQuiz() {
                 err?.message ||
                 err;
 
+            // Never display raw JSON objects to users
             const normalized = typeof message === "string" ? message.toLowerCase() : "";
             if (
                 typeof message === "string" &&
@@ -45,72 +43,79 @@ function JoinQuiz() {
                   normalized.includes("quiz closed"))
             ) {
                 setError(
-                    "This quiz is no longer accepting participants because the join deadline has passed."
+                    "⚠ Quiz Closed\nThis quiz is no longer accepting participants because the join deadline has passed."
                 );
             } else if (typeof message === "string") {
                 setError(message);
             } else {
                 setError("Unable to join quiz. Please try again.");
             }
+
+
         } finally {
             setIsSubmitting(false);
         }
     }
 
     return (
-        <div className="w-full max-w-md mx-auto">
-            <SectionHeader
-                title="Join Quiz"
-                description="Enter the quiz code shared by the creator to participate."
-                icon={LogIn}
-                className="mb-6"
-            />
-
-            <Card padding="lg" className="border border-slate-700/50">
-                {error ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4"
-                        role="alert"
-                    >
-                        <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-300">{error}</p>
-                    </motion.div>
-                ) : null}
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <Input
-                        label="Quiz Code"
-                        value={quizCode}
-                        onChange={(e) => setQuizCode(e.target.value.toUpperCase())}
-                        placeholder="e.g. ABC123"
-                        type="text"
-                        disabled={isSubmitting}
-                        autoComplete="off"
-                        icon={Key}
-                        className="text-center tracking-widest text-lg font-mono"
-                    />
-
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        isLoading={isSubmitting}
-                        disabled={isSubmitting || !quizCode.trim()}
-                        icon={LogIn}
-                    >
-                        Join Quiz
-                    </Button>
-                </form>
-
-                <div className="mt-5 pt-5 border-t border-slate-700/50">
-                    <p className="text-xs text-center text-slate-500">
-                        Don't have a quiz code? Ask your teacher or quiz creator to share one with you.
+        <div className="flex w-full flex-col items-center justify-center">
+            <div className="w-full max-w-md">
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold tracking-tight">Join Quiz</h1>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Enter the quiz code shared by the creator.
                     </p>
                 </div>
-            </Card>
+
+                <Card
+                    className="mt-6 max-w-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-xl"
+                    padding="none"
+                    bordered={false}
+                    shadow={false}
+                >
+                    {error ? (
+                        <div
+                            className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/60 dark:bg-red-900/20 dark:text-red-200"
+                            role="alert"
+                        >
+                            {error}
+                        </div>
+                    ) : null}
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                                Quiz Code
+                            </label>
+
+                            <Input
+                                value={quizCode}
+                                onChange={(e) => setQuizCode(e.target.value)}
+                                placeholder="Enter quiz code"
+                                className="h-12 rounded-xl bg-white dark:bg-gray-900"
+                                inputClassName=""
+                                type="text"
+                                disabled={isSubmitting}
+                                autoComplete="off"
+                            />
+                        </div>
+
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            className="h-12 w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-lg"
+                            isLoading={isSubmitting}
+                            disabled={isSubmitting}
+                        >
+                            Join Quiz
+                        </Button>
+                    </form>
+
+                    <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
+                        Need a quiz code? Ask your teacher or quiz creator for the code.
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 }

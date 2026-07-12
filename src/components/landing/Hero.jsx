@@ -12,7 +12,7 @@ function Hero() {
       <div className="absolute left-1/2 top-[-120px] h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-indigo-500/15 blur-3xl" />
       <div className="absolute right-[-120px] top-32 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8 sm:pb-16 sm:pt-10 lg:pb-24 lg:pt-14">
+      <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-24 lg:pt-14">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -38,19 +38,20 @@ function Hero() {
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
-                className="h-12 text-base"
+                className="h-11 text-base"
                 onClick={() => (window.location.href = "/register")}
               >
                 Get Started Free
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Button>
+
               <button
                 type="button"
                 onClick={() => {
                   const el = document.getElementById("how-it-works");
                   el?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-5 text-base font-semibold text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-5 text-base font-semibold text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               >
                 <PlayCircle className="h-4 w-4 text-indigo-200" aria-hidden="true" />
                 See How It Works
